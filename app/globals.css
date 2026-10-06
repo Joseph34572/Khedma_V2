@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-tajawal: "Tajawal", Tahoma, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #F6F3EC;
+  color: #23201A;
+}
+
+/* تمرير أفقي للجداول على الموبايل مع تثبيت عمود الاسم */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.sticky-col {
+  position: sticky;
+  right: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+:focus-visible {
+  outline: 2px solid #B8862E;
+  outline-offset: 2px;
+}
