@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useEffect, useRef, useState } from "react";
 import { startReadingSessionAction, finishReadingSessionAction } from "@/lib/actions/bible";
 
@@ -77,7 +78,7 @@ export function BibleReader({
     return (
       <div className="max-w-xl text-center">
         <div className="bg-white rounded-card border border-line p-8">
-          <p className="text-3xl mb-3">✅</p>
+          <span className="mb-3 inline-flex text-good"><Icon name="checkCircle" size={44} /></span>
           <h1 className="text-lg font-extrabold text-ink mb-1">تم تسجيل جلسة القراءة</h1>
           <a href={backHref} className="inline-block mt-4 text-primary font-bold">رجوع</a>
         </div>

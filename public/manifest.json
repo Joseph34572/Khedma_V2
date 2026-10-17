@@ -4,8 +4,8 @@
   "description": "تطبيق متابعة خدمة مرحلة إعدادي",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F6F3EC",
-  "theme_color": "#1E3A34",
+  "background_color": "#FBF3E7",
+  "theme_color": "#7A1F2B",
   "dir": "rtl",
   "lang": "ar",
   "icons": [

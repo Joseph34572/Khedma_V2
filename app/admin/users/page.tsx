@@ -51,7 +51,7 @@ export default async function UsersListPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Link href={`/admin/users/${u.id}`} className="text-primary font-medium hover:underline">
+                  <Link href={`/admin/users/${u.id}`} prefetch={false} className="text-primary font-medium hover:underline">
                     إدارة
                   </Link>
                 </td>

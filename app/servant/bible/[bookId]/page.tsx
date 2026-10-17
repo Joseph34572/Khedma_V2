@@ -26,6 +26,7 @@ export default async function BookChaptersPage({ params }: { params: { bookId: s
           <Link
             key={c.id}
             href={`/servant/bible/${bookId}/${c.chapter_number}`}
+            prefetch={false}
             className="bg-white rounded-lg border border-line py-2.5 text-center font-bold hover:border-primary"
           >
             {c.chapter_number}

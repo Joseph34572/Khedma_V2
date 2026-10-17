@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createQuizAction, prepareQuizAttachmentUploadAction } from "@/lib/actions/quizzes";
@@ -156,7 +157,7 @@ export function QuizBuilder({ stages, basePath }: { stages: Stage[]; basePath: s
                 <div className="flex gap-2">
                   {q.choices.map((c, ci) => (
                     <button key={ci} type="button" onClick={() => updateChoice(qi, ci, { correct: true })} className={`flex-1 rounded-lg border py-2 text-sm font-bold ${c.correct ? "bg-good text-white border-good" : "border-line"}`}>
-                      {c.text} {c.correct && "✓ (الصحيحة)"}
+                      {c.text} {c.correct && <span className="inline-flex items-center gap-1 text-good font-bold"><Icon name="check" size={13} strokeWidth={3} />الصحيحة</span>}
                     </button>
                   ))}
                 </div>
@@ -174,7 +175,7 @@ export function QuizBuilder({ stages, basePath }: { stages: Stage[]; basePath: s
                       />
                       <input className={input} placeholder={`الاختيار ${ci + 1}`} value={c.text} onChange={(e) => updateChoice(qi, ci, { text: e.target.value })} />
                       {q.choices.length > 2 && (
-                        <button type="button" onClick={() => update(qi, { choices: q.choices.filter((_, j) => j !== ci) })} className="text-bad">✕</button>
+                        <button type="button" onClick={() => update(qi, { choices: q.choices.filter((_, j) => j !== ci) })} aria-label="حذف الاختيار" className="text-bad p-1"><Icon name="x" size={16} /></button>
                       )}
                     </div>
                   ))}

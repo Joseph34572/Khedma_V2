@@ -27,7 +27,7 @@ export default async function ChildQuizzesPage() {
           const mine = (myAttempts ?? []).filter((a) => a.quiz_id === q.id);
           const lastSubmitted = mine.filter((a) => a.submitted_at).length;
           return (
-            <Link key={q.id} href={`/child/quizzes/${q.id}`} className="flex items-center justify-between bg-white rounded-card border border-line p-4 hover:border-primary">
+            <Link key={q.id} href={`/child/quizzes/${q.id}`} prefetch={false} className="flex items-center justify-between bg-white rounded-card border border-line p-4 hover:border-primary">
               <div>
                 <p className="font-bold">{q.title_ar}</p>
                 <p className="text-xs text-ink-soft mt-1">

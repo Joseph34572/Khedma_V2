@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/Icon";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { STAGE_LABELS, canViewAllStages, type Stage } from "@/lib/roles";
@@ -63,9 +64,9 @@ export default async function ChildProfilePage({ params }: { params: { servantId
         <p className="text-ink-soft mt-1">{STAGE_LABELS[child.stage_id as Stage]}</p>
         <div className="mt-2">
           {child.status === "active" ? (
-            <StatusBadge tone="good">✅ حساب نشط</StatusBadge>
+            <StatusBadge tone="good">حساب نشط</StatusBadge>
           ) : (
-            <StatusBadge tone="bad">🔴 حساب معطّل</StatusBadge>
+            <StatusBadge tone="bad">حساب معطّل</StatusBadge>
           )}
         </div>
       </div>
@@ -142,7 +143,7 @@ export default async function ChildProfilePage({ params }: { params: { servantId
         </Section>
       ) : (
         <Section title="تاريخ الاعتراف">
-          <p className="text-sm text-ink-soft">🔒 هذه البيانات مقيّدة ومتاحة للأمناء العامين فقط.</p>
+          <p className="text-sm text-ink-soft flex items-center gap-1.5"><Icon name="lock" size={15} />هذه البيانات مقيّدة ومتاحة للأمناء العامين فقط.</p>
         </Section>
       )}
     </div>

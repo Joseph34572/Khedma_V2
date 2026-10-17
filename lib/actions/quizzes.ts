@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { logAuditEvent } from "@/lib/audit";
+import { logAuditEvent, audit } from "@/lib/audit";
 import { canViewAllStages, type AppRole } from "@/lib/roles";
 
 const BUCKET = "quiz-files";
@@ -270,6 +270,7 @@ export async function startQuizAttemptAction(quizId: string): Promise<{ attemptI
     .select("id")
     .single();
   if (error || !created) return { error: "تعذّر بدء المحاولة. حاول مرة أخرى." };
+  await audit({ actorId: me.user.id, action: "start_quiz_attempt", entityType: "quiz_attempt", entityId: created.id, details: { quiz_id: quizId, attempt_number: nextNumber } });
   return { attemptId: created.id };
 }
 
@@ -328,6 +329,7 @@ export async function submitQuizAttemptAction(attemptId: string, answers: Answer
     .is("submitted_at", null);
   if (error) return { error: "تعذّر تسليم المحاولة" };
 
+  await audit({ actorId: me.user.id, action: "submit_quiz_attempt", entityType: "quiz_attempt", entityId: attemptId, details: { quiz_id: attempt.quiz_id, score, needs_review: needsReview } });
   revalidatePath("/child/quizzes");
   return { ok: true };
 }
@@ -383,6 +385,7 @@ export async function finalizeAnswerUploadAction(attemptId: string, path: string
     .update({ submitted_at: new Date().toISOString(), answer_file_path: path, answer_file_name: originalName.slice(0, 120), needs_review: true })
     .eq("id", attemptId);
   if (error) return { error: "تعذّر حفظ التسليم" };
+  await audit({ actorId: me.user.id, action: "submit_quiz_file", entityType: "quiz_attempt", entityId: attemptId, details: { file_name: originalName.slice(0, 120) } });
   revalidatePath("/child/quizzes");
   return { ok: true };
 }
@@ -422,6 +425,9 @@ export async function gradeAttemptAction(attemptId: string, score: number, feedb
     .update({ score, feedback: feedback.trim().slice(0, 1000) || null, graded_by: me.user.id, graded_at: new Date().toISOString(), needs_review: false })
     .eq("id", attemptId);
   if (error) return { error: "تعذّر حفظ الدرجة" };
+  // التفاصيل الكاملة (الدرجة، الملاحظات) موجودة بالفعل في quiz_attempts نفسها،
+  // فبنسجّل هنا بس إشارة خفيفة إن فيه تصحيح حصل ومين عمله.
+  await logAuditEvent(createServiceClient(), { actorId: me.user.id, action: "grade_attempt", entityType: "quiz_attempt", entityId: attemptId, details: { quiz_id: attempt.quiz_id, score } });
   revalidatePath(`/servant/quizzes/${attempt.quiz_id}`);
   revalidatePath(`/admin/quizzes/${attempt.quiz_id}`);
   return {};

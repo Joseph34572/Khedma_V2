@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState, useTransition } from "react";
 import { markNotificationReadAction } from "@/lib/actions/notifications";
 import { relativeArabicDate } from "@/lib/format";
@@ -48,7 +49,7 @@ export function Inbox({ items }: { items: InboxItem[] }) {
                 <p className="whitespace-pre-wrap">{item.body}</p>
                 {item.linkUrl && (
                   <a href={item.linkUrl} className="inline-block mt-2 text-primary font-bold hover:underline">
-                    فتح الرابط ←
+                    <span className="inline-flex items-center gap-1">فتح الرابط<Icon name="arrowLeft" size={14} /></span>
                   </a>
                 )}
               </div>

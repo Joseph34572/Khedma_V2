@@ -2,7 +2,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useState } from "react";
-import { updateUserAction, resetPasswordAction, setUserStatusAction, type ActionState } from "../actions";
+import { updateUserAction, resetPasswordAction, setUserStatusAction, deleteUserAction, type ActionState } from "../actions";
 import { STAGE_LABELS, ROLE_LABELS, type AppRole, type Stage } from "@/lib/roles";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -21,6 +21,7 @@ function SaveButton({ children }: { children: React.ReactNode }) {
 export function UserEditForm({
   userId,
   fullName,
+  phoneDisplay,
   role,
   stageId,
   status,
@@ -28,6 +29,7 @@ export function UserEditForm({
 }: {
   userId: string;
   fullName: string;
+  phoneDisplay: string;
   role: string;
   stageId: string | null;
   status: string;
@@ -35,8 +37,10 @@ export function UserEditForm({
 }) {
   const [updateState, updateAction] = useFormState(updateUserAction, initialState);
   const [passwordState, passwordAction] = useFormState(resetPasswordAction, initialState);
+  const [deleteState, deleteAction] = useFormState(deleteUserAction, initialState);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [pendingStatus, setPendingStatus] = useState(false);
+  const [confirmPhone, setConfirmPhone] = useState("");
 
   async function toggleStatus() {
     if (isSelf) return;
@@ -119,6 +123,48 @@ export function UserEditForm({
         {passwordState.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{passwordState.success}</p>}
         <SaveButton>تغيير كلمة المرور</SaveButton>
       </form>
+
+      {!isSelf && (
+        <form
+          action={deleteAction}
+          onSubmit={(e) => {
+            if (!window.confirm(`هل أنت متأكد من حذف حساب "${fullName}" نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+              e.preventDefault();
+            }
+          }}
+          className="bg-bad/5 rounded-card border border-bad/30 p-5 space-y-3"
+        >
+          <input type="hidden" name="user_id" value={userId} />
+          <h2 className="font-bold text-bad">حذف الحساب نهائيًا</h2>
+          <p className="text-sm text-ink-soft">
+            هذا إجراء نهائي لا يمكن التراجع عنه. سيُحذف الحساب وبيانات صاحبه الشخصية (الصلاة، القراءة،
+            الحضور، محاولات المسابقات) نهائيًا. السجلات التي شارك فيها كمنفِّذ لعمليات أخرى (مثل تسجيل
+            حضور غيره) تبقى محفوظة لكن بدون نسبتها له. لتعطيل الحساب مؤقتًا بدل حذفه، استخدم "تعطيل
+            الحساب" أعلى الصفحة.
+          </p>
+          <label className="block">
+            <span className="block mb-1.5 text-sm font-medium text-ink">
+              للتأكيد، اكتب رقم هاتف الحساب بالضبط: <span dir="ltr" className="font-mono">{phoneDisplay}</span>
+            </span>
+            <input
+              name="confirm_phone"
+              dir="ltr"
+              value={confirmPhone}
+              onChange={(e) => setConfirmPhone(e.target.value)}
+              required
+              className={inputClass}
+            />
+          </label>
+          {deleteState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{deleteState.error}</p>}
+          <button
+            type="submit"
+            disabled={confirmPhone !== phoneDisplay}
+            className="rounded-lg bg-bad text-white px-5 py-2.5 font-bold disabled:opacity-50"
+          >
+            حذف الحساب نهائيًا
+          </button>
+        </form>
+      )}
     </div>
   );
 }

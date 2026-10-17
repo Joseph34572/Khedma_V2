@@ -24,6 +24,7 @@ export default async function EditUserPage({ params }: { params: { id: string } 
       <UserEditForm
         userId={target.id}
         fullName={target.full_name}
+        phoneDisplay={formatPhoneForDisplay(target.phone_normalized)}
         role={target.role}
         stageId={target.stage_id}
         status={target.status}

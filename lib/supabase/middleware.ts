@@ -30,9 +30,14 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  // getClaims() بيتحقق من توقيع التوكن محليًا (بمفاتيح JWKS المتخزنة مؤقتًا) من غير
+  // ما يكلّم سيرفر Supabase في كل طلب زي getUser() — ده بيوفّر رحلة شبكة كاملة على
+  // كل صفحة. لو المشروع لسه بيستخدم مفتاح متماثل (HS256) هو بيرجع تلقائيًا لـ
+  // getUser()، فالأمان واحد في الحالتين. الحساب المعطّل بيتمنع برضه في layout كل قسم
+  // (فحص status في profiles)، فمش معتمدين على getUser() عشان نكتشفه.
+  const { data } = await supabase.auth.getClaims();
+  const sub = data?.claims?.sub;
+  const user = typeof sub === "string" && sub ? { id: sub } : null;
 
   return { response, user, supabase };
 }

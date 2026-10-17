@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { startPrayerSessionAction, finishPrayerSessionAction } from "@/lib/actions/prayer";
@@ -97,7 +98,7 @@ export function PrayerRunner({ prayerContentId, title, body, backHref }: { praye
     return (
       <div className="max-w-xl text-center">
         <div className="bg-white rounded-card border border-line p-8">
-          <p className="text-3xl mb-3">✅</p>
+          <span className="mb-3 inline-flex text-good"><Icon name="checkCircle" size={44} /></span>
           <h1 className="text-lg font-extrabold text-ink mb-1">تم تسجيل الجلسة</h1>
           <p className="text-ink-soft text-sm">الوقت النشط: {Math.round(activeSeconds / 60)} دقيقة</p>
           <a href={backHref} className="inline-block mt-5 text-primary font-bold">رجوع لقائمة الصلوات</a>
@@ -123,7 +124,7 @@ export function PrayerRunner({ prayerContentId, title, body, backHref }: { praye
       <div className="flex gap-2 mt-4">
         {phase === "running" ? (
           <button onClick={() => setPhase("paused")} className="flex-1 rounded-lg border border-line py-3 font-bold">
-            ⏸ توقف
+            <span className="inline-flex items-center gap-1.5"><Icon name="pause" size={16} />توقف</span>
           </button>
         ) : (
           <button onClick={() => setPhase("running")} className="flex-1 rounded-lg border border-line py-3 font-bold">

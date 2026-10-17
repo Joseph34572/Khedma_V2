@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useEffect, useRef, useState } from "react";
 import { scanAttendanceAction } from "@/lib/actions/qr";
 
@@ -20,7 +21,7 @@ export function QrScanner({ kind, entityId }: { kind: "mass" | "sunday_school"; 
     lastScan.current = { code, at: now };
     const result = await scanAttendanceAction(kind, entityId, code);
     const entry: LogEntry =
-      "ok" in result ? { text: `✅ تم تسجيل حضور ${result.name}`, tone: "good" } : { text: `⚠️ ${result.error}`, tone: "bad" };
+      "ok" in result ? { text: `تم تسجيل حضور ${result.name}`, tone: "good" } : { text: result.error, tone: "bad" };
     setLog((prev) => [entry, ...prev].slice(0, 15));
     if (navigator.vibrate) navigator.vibrate("ok" in result ? 80 : [80, 60, 80]);
     setTimeout(() => (busy.current = false), 1200);
@@ -50,14 +51,14 @@ export function QrScanner({ kind, entityId }: { kind: "mass" | "sunday_school"; 
       <div id="qr-reader" className="rounded-card overflow-hidden border border-line bg-white min-h-[120px]" />
       {!started && (
         <button onClick={start} className="w-full mt-3 rounded-lg bg-primary text-white py-3 font-bold">
-          📷 فتح الكاميرا
+          <span className="inline-flex items-center gap-1.5 justify-center"><Icon name="camera" size={18} />فتح الكاميرا</span>
         </button>
       )}
       {error && <p className="text-bad text-sm mt-3 bg-bad/10 rounded-lg px-3 py-2">{error}</p>}
       <div className="mt-4 space-y-2">
         {log.map((e, i) => (
           <p key={i} className={`text-sm rounded-lg px-3 py-2 ${e.tone === "good" ? "bg-good/10 text-good" : "bg-bad/10 text-bad"}`}>
-            {e.text}
+            <span className="inline-flex items-center gap-1.5"><Icon name={e.tone === "good" ? "check" : "alert"} size={15} />{e.text}</span>
           </p>
         ))}
       </div>

@@ -1,19 +1,5 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth";
-import { PrayerRunner } from "@/components/PrayerRunner";
+import { PrayerHourPage } from "@/components/prayer/PrayerHourPage";
 
-export default async function ChildPrayerRunPage({ params }: { params: { prayerId: string } }) {
-  const { supabase, user } = await getCurrentProfile();
-  if (!user) redirect("/login");
-
-  const { data: prayer } = await supabase
-    .from("prayer_contents")
-    .select("id, title_ar, body_ar, is_active")
-    .eq("id", params.prayerId)
-    .eq("is_active", true)
-    .single();
-
-  if (!prayer) notFound();
-
-  return <PrayerRunner prayerContentId={prayer.id} title={prayer.title_ar} body={prayer.body_ar} backHref="/child/prayer" />;
+export default function PrayerPage({ params }: { params: { prayerId: string } }) {
+  return <PrayerHourPage prayerId={params.prayerId} backHref="/child/prayer" />;
 }

@@ -9,7 +9,8 @@ export default async function ServantNotificationsPage() {
   if (!user || !role) redirect("/login");
 
   const items = await loadInbox();
-  const canCompose = role === "stage_secretary";
+  // الخادم وأمين المرحلة الاتنين يقدروا يبعتوا لأولاد وخدام وأمناء مرحلتهم.
+  const canCompose = role === "stage_secretary" || role === "servant";
 
   return (
     <div className="max-w-2xl">

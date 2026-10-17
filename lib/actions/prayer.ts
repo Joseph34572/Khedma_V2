@@ -1,5 +1,6 @@
 "use server";
 
+import { audit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,6 +44,7 @@ export async function startPrayerSessionAction(
       .update({ status: "in_progress", ended_at: null })
       .eq("id", existing.id)
       .eq("user_id", user.id);
+    await audit({ actorId: user.id, action: "start_prayer", entityType: "prayer_session", entityId: existing.id, details: { prayer_content_id: prayerContentId, resumed: true } });
     return { sessionId: existing.id, priorActiveSeconds: existing.active_seconds ?? 0 };
   }
 
@@ -53,6 +55,7 @@ export async function startPrayerSessionAction(
     .single();
 
   if (error || !data) return { error: "تعذّر بدء جلسة الصلاة" };
+  await audit({ actorId: user.id, action: "start_prayer", entityType: "prayer_session", entityId: data.id, details: { prayer_content_id: prayerContentId } });
   return { sessionId: data.id, priorActiveSeconds: 0 };
 }
 
@@ -99,6 +102,14 @@ export async function finishPrayerSessionAction(params: {
     session_id: params.sessionId,
     event_type: "session_summary",
     payload: { active_seconds: activeSeconds, progress_percent: progressPercent }
+  });
+
+  await audit({
+    actorId: user.id,
+    action: "finish_prayer",
+    entityType: "prayer_session",
+    entityId: params.sessionId,
+    details: { active_seconds: activeSeconds, completion_level: completionLevel, abandoned: !!params.abandoned }
   });
 
   revalidatePath("/child/prayer");

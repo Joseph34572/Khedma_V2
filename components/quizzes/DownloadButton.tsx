@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState } from "react";
 import { getQuizAttachmentUrlAction, getAnswerFileUrlAction } from "@/lib/actions/quizzes";
 
@@ -17,7 +18,7 @@ export function DownloadButton({ kind, id, label }: { kind: "attachment" | "answ
   return (
     <span>
       <button onClick={open} disabled={busy} className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-bold text-primary hover:border-primary disabled:opacity-60">
-        {busy ? "..." : `📎 ${label}`}
+        {busy ? "..." : <span className="inline-flex items-center gap-1.5"><Icon name="paperclip" size={15} />{label}</span>}
       </button>
       {err && <span className="text-bad text-xs ms-2">{err}</span>}
     </span>

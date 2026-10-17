@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/Icon";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
@@ -63,14 +64,14 @@ export async function SymposiumListPage({ basePath, searchParams }: { basePath: 
       )}
       <div className="space-y-2">
         {(questions ?? []).map((q) => (
-          <Link key={q.id} href={`${basePath}/${q.id}`} className="block bg-white rounded-card border border-line p-4 hover:border-primary">
+          <Link key={q.id} href={`${basePath}/${q.id}`} prefetch={false} className="block bg-white rounded-card border border-line p-4 hover:border-primary">
             <div className="flex items-center justify-between mb-1.5 gap-2">
               <StatusBadge tone={QUESTION_STATUS_TONE[q.status]}>{QUESTION_STATUS_LABELS[q.status]}</StatusBadge>
               <span className="text-xs text-ink-soft">{STAGE_LABELS[q.stage_id]} · {relativeArabicDate(q.created_at)}</span>
             </div>
             <p className="text-sm text-ink line-clamp-2">{q.question_text}</p>
             <p className="text-xs text-ink-soft mt-1.5">
-              {q.is_anonymous ? "🕶️ مجهول" : q.asker_name}
+              {q.is_anonymous ? <span className="inline-flex items-center gap-1"><Icon name="eyeOff" size={14} />مجهول</span> : q.asker_name}
               {q.assigned_name ? ` · معيّن لـ ${q.assigned_name}` : ""}
             </p>
           </Link>
@@ -94,7 +95,7 @@ export async function SymposiumDetailPage({ questionId, basePath }: { questionId
       <Link href={basePath} className="text-sm text-ink-soft hover:underline">‹ رجوع</Link>
       <div className="bg-white rounded-card border border-line p-5 mt-2 mb-4">
         <p className="text-xs text-ink-soft mb-2">
-          {STAGE_LABELS[q.stage_id]} · {relativeArabicDate(q.created_at)} · {q.is_anonymous ? "🕶️ مجهول" : q.asker_name}
+          {STAGE_LABELS[q.stage_id]} · {relativeArabicDate(q.created_at)} · {q.is_anonymous ? <span className="inline-flex items-center gap-1"><Icon name="eyeOff" size={14} />مجهول</span> : q.asker_name}
         </p>
         <p className="leading-relaxed whitespace-pre-line">{q.question_text}</p>
       </div>

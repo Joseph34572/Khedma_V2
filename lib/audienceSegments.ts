@@ -23,7 +23,7 @@ export function globalAudienceSegments(): AudienceSegment[] {
   return segments;
 }
 
-/** المجموعات المتاحة لأمين خدمة: أولاد وخدام مرحلته فقط. */
+/** المجموعات المتاحة للخادم وأمين الخدمة: أولاد وخدام وأمناء مرحلته فقط. */
 export function stageAudienceSegments(stage: Stage): AudienceSegment[] {
-  return [`member:${stage}`, `servant:${stage}`];
+  return [`member:${stage}`, `servant:${stage}`, `stage_secretary:${stage}`];
 }

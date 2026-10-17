@@ -11,8 +11,8 @@ html {
 }
 
 body {
-  background-color: #F6F3EC;
-  color: #23201A;
+  background-color: #FBF3E7;
+  color: #2E2117;
 }
 
 /* تمرير أفقي للجداول على الموبايل مع تثبيت عمود الاسم */
@@ -28,6 +28,107 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #B8862E;
+  outline: 2px solid #C7A24A;
   outline-offset: 2px;
+}
+
+/* ============================================================================
+   أسلوب "حيوي" (Playful): حركات دخول بنطّة خفيفة، كروت وزراير "ثلاثية الأبعاد"
+   بظل سفلي، وضغطة مرنة. كله CSS بس (من غير مكتبات)، وبيتقفل تلقائيًا لو المستخدم
+   مفعّل "تقليل الحركة" من إعدادات جهازه.
+   ملحوظة مهمة: حركات الدخول بتستخدم fill-mode "backwards" مش "both"، يعني بعد ما
+   الحركة تخلص العنصر بيرجع لحالته الطبيعية (من غير transform خالص) — كده الهوفر
+   والضغطة بيشتغلوا، وأي عنصر position: fixed أو sticky جوه الصفحة يفضل طبيعي.
+   ========================================================================== */
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  65% { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes drop {
+  0% { opacity: 0; transform: translateY(-30px); }
+  60% { opacity: 1; transform: translateY(6px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+@keyframes ring-fill { from { stroke-dashoffset: var(--ring-full, 213.6); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes tick { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes wave { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(10deg); } 40% { transform: rotate(-6deg); } 60% { transform: rotate(8deg); } }
+
+.anim-pop { animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+.anim-drop { animation: drop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+.anim-check { stroke-dasharray: 24; animation: draw 0.5s 0.75s ease-out backwards; }
+.anim-ring { animation: ring-fill 1.3s 0.4s cubic-bezier(0.34, 1.3, 0.64, 1) backwards; }
+.anim-float { animation: float 3.2s ease-in-out infinite; }
+.anim-tick { display: inline-flex; animation: tick 2.4s 1.2s ease-in-out infinite; }
+.anim-wave { display: inline-block; transform-origin: 70% 80%; animation: wave 1.6s 0.8s ease-in-out 2; }
+
+.delay-1 { animation-delay: 0.05s; } .delay-2 { animation-delay: 0.18s; }
+.delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.38s; }
+.delay-5 { animation-delay: 0.46s; } .delay-6 { animation-delay: 0.54s; }
+.delay-7 { animation-delay: 0.66s; } .delay-8 { animation-delay: 0.78s; }
+
+/* دخول كل صفحة: الكروت والعناصر بتظهر بانسياب ناعم (fade + طلعة بسيطة لفوق)
+   واحدة ورا التانية — من غير نطّة. AppShell بيلف محتوى الصفحة في .page-enter
+   بمفتاح = المسار، فالحركة بتتعاد مع كل تنقّل. العناوين (h1/h2) والبلوك اللي
+   فيه عنوان الصفحة ثابتين ومش بيتحركوا. */
+@keyframes flow-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.page-enter > * > * { animation: flow-in 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+.page-enter > * > *:nth-child(1) { animation-delay: 0.03s; }
+.page-enter > * > *:nth-child(2) { animation-delay: 0.09s; }
+.page-enter > * > *:nth-child(3) { animation-delay: 0.15s; }
+.page-enter > * > *:nth-child(4) { animation-delay: 0.21s; }
+.page-enter > * > *:nth-child(5) { animation-delay: 0.27s; }
+.page-enter > * > *:nth-child(6) { animation-delay: 0.33s; }
+.page-enter > * > *:nth-child(7) { animation-delay: 0.39s; }
+.page-enter > * > *:nth-child(n + 8) { animation-delay: 0.45s; }
+.page-enter > * > :is(h1, h2, header),
+.page-enter > * > :has(> h1, > h2) { animation: none; }
+
+/* الكروت: ظل سفلي "ثلاثي الأبعاد"؛ والكروت اللي هي روابط بتكبر وتميل شوية مع الهوفر. */
+main .rounded-card { box-shadow: 0 5px 0 #ECDFC8; }
+main a.rounded-card,
+.playful-card { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+main a.rounded-card:hover,
+.playful-card:hover { transform: scale(1.03) rotate(-1deg); }
+
+/* الزراير الأساسية (عنابي/ذهبي) جوه الصفحات: ظل سفلي + طلعة خفيفة مع الهوفر +
+   ضغطة مرنة. متقفلة على main عشان متأثرش على قايمة التنقل. */
+main button.bg-primary,
+main a.bg-primary,
+main button.bg-gold,
+main a.bg-gold {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+main button.bg-primary,
+main a.bg-primary { box-shadow: 0 5px 0 #5A1620; }
+main button.bg-gold,
+main a.bg-gold { box-shadow: 0 5px 0 #A17F32; }
+main button.bg-primary:hover:not(:disabled),
+main a.bg-primary:hover,
+main button.bg-gold:hover:not(:disabled),
+main a.bg-gold:hover { transform: translateY(-2px); }
+main button.bg-primary:active:not(:disabled),
+main a.bg-primary:active,
+main button.bg-gold:active:not(:disabled),
+main a.bg-gold:active { transform: scale(0.94); }
+
+.nav-pill { transition: right 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nav-tab { transition: color 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nav-tab:active { transform: scale(0.88); }
+
+/* قارئ الأجبية: الجزء الجديد بيدخل من ناحية السحب (عربي: التالي من الشمال). */
+@keyframes agpeya-from-left { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes agpeya-from-right { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+.agpeya-in-next { animation: agpeya-from-left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+.agpeya-in-prev { animation: agpeya-from-right 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop, .anim-drop, .anim-check, .anim-ring, .anim-float, .anim-tick, .anim-wave,
+  .page-enter > * > *, .agpeya-in-next, .agpeya-in-prev { animation: none !important; }
+  main a.rounded-card, .playful-card, main button, main a, .nav-pill, .nav-tab { transition: none !important; }
 }

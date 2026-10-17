@@ -63,10 +63,9 @@ export function ComposeForm({ scope, myStage }: { scope: "global" | "stage"; myS
           {stagesToShow.map((stage) => (
             <Checkbox key={`servant:${stage}`} value={`servant:${stage}`} label={`خدام ${STAGE_LABELS[stage]}`} />
           ))}
-          {scope === "global" &&
-            stagesToShow.map((stage) => (
-              <Checkbox key={`stage_secretary:${stage}`} value={`stage_secretary:${stage}`} label={`أمناء ${STAGE_LABELS[stage]}`} />
-            ))}
+          {stagesToShow.map((stage) => (
+            <Checkbox key={`stage_secretary:${stage}`} value={`stage_secretary:${stage}`} label={`أمناء ${STAGE_LABELS[stage]}`} />
+          ))}
           {scope === "global" && <Checkbox value="general_secretary" label="أمين عام" />}
           {scope === "global" && <Checkbox value="super_admin" label="مدير عام" />}
         </div>

@@ -1,5 +1,6 @@
 "use server";
 
+import { audit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,6 +21,8 @@ export async function registerMassAttendanceAction(massId: string) {
     if (error.code === "23505") throw new Error("تم تسجيل حضورك لهذا القداس من قبل.");
     throw new Error("تعذّر تسجيل الحضور.");
   }
+
+  await audit({ actorId: user.id, action: "self_report_mass", entityType: "mass", entityId: massId });
 
   revalidatePath("/child/mass");
 }

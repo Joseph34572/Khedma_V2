@@ -94,6 +94,13 @@ cp .env.example .env.local
 11. `supabase/migrations/0011_content_open_to_staff.sql`
 12. `supabase/migrations/0012_child_summary_extra_columns.sql`
 13. `supabase/migrations/0013_notifications_fixes.sql`
+14. `supabase/migrations/0014_login_rate_limit.sql` (تقييد محاولات تسجيل الدخول)
+15. `supabase/migrations/0015_login_rate_limit_hardening.sql` (تقييد صلاحية تقييد الدخول لـ service_role فقط)
+16. `supabase/migrations/0016_user_hard_delete.sql` (تمكين حذف الحسابات نهائيًا)
+17. `supabase/migrations/0017_login_rate_limit_ip_and_reset.sql` (تقييد بالـ IP + تصفير العدّاد بعد نجاح الدخول)
+
+بعد تشغيل migration 16، تحقّق من عدم وجود عمود آخر ناسي بتشغيل الاستعلام الموجود
+كتعليق آخر الملف نفسه (المفروض يرجّع صفر صفوف).
 
 (أو باستخدام Supabase CLI: `supabase db push` بعد ربط المشروع محليًا)
 

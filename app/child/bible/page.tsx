@@ -46,7 +46,7 @@ function BookGrid({ books, basePath }: { books: { id: number; name_ar: string }[
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {books.map((b) => (
-        <Link key={b.id} href={`${basePath}/${b.id}`} className="bg-white rounded-lg border border-line p-3 text-center font-bold text-sm hover:border-primary">
+        <Link key={b.id} href={`${basePath}/${b.id}`} prefetch={false} className="bg-white rounded-lg border border-line p-3 text-center font-bold text-sm hover:border-primary">
           {b.name_ar}
         </Link>
       ))}
