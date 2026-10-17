@@ -1,5 +1,6 @@
 "use client";
 
+import { InstallBanner } from "@/components/pwa/InstallApp";
 import { Icon } from "@/components/ui/Icon";
 import { useFormState, useFormStatus } from "react-dom";
 import { loginAction, type LoginState } from "./actions";
@@ -33,6 +34,8 @@ export default function LoginPage() {
           <h1 className="text-2xl font-extrabold text-ink">خدمة إعدادي</h1>
           <p className="text-ink-soft mt-1">تسجيل الدخول لمتابعة الخدمة</p>
         </div>
+
+        <InstallBanner />
 
         <form action={formAction} className="bg-white rounded-card border border-line p-6 space-y-4">
           <div>

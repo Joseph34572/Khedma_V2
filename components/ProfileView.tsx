@@ -1,4 +1,5 @@
 import { QrCodeCard } from "@/components/QrCodeCard";
+import { InstallCard } from "@/components/pwa/InstallApp";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { STAGE_LABELS, ROLE_LABELS, type AppRole, type Stage } from "@/lib/roles";
@@ -32,6 +33,7 @@ export function ProfileView({ me }: { me: ProfileViewData }) {
         </dl>
       </section>
       <QrCodeCard token={me.qr_token} />
+      <InstallCard />
     </div>
   );
 }
