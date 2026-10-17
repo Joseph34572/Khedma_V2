@@ -1,5 +1,6 @@
 "use client";
 
+import { InstallBanner } from "@/components/pwa/InstallApp";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -125,6 +126,7 @@ export function AppShell({
 
         <main className="flex-1 p-4 -mt-3 lg:mt-0 lg:p-8 pb-28 lg:pb-8">
           {/* المفتاح = المسار، فمع كل تنقّل المحتوى بيدخل بحركة "النطّة" من جديد. */}
+          <InstallBanner />
           <div key={pathname} className="page-enter">
             {children}
           </div>

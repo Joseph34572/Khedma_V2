@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { PwaSetup } from "@/components/pwa/InstallApp";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 
@@ -11,7 +12,22 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: "خدمة إعدادي",
   description: "تطبيق متابعة خدمة مرحلة إعدادي",
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
+  applicationName: "خدمة إعدادي",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }]
+  },
+  // على الآيفون: لما يتضاف للشاشة الرئيسية يفتح كتطبيق بملء الشاشة من غير شريط Safari.
+  appleWebApp: {
+    capable: true,
+    title: "خدمة إعدادي",
+    statusBarStyle: "default"
+  },
+  formatDetection: { telephone: false }
 };
 
 export const viewport: Viewport = {
@@ -27,7 +43,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <PwaSetup />
+        {children}
+      </body>
     </html>
   );
 }
