@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteMassAction, deleteSundaySchoolSessionAction } from "@/lib/actions/attendance";
@@ -57,7 +58,7 @@ export function DeleteSheetButton({
         onClick={() => setConfirming(true)}
         className="inline-block rounded-lg border border-red-300 text-red-700 px-3 py-1.5 text-sm font-bold hover:bg-red-50"
       >
-        🗑️ حذف الكشف
+        <span className="inline-flex items-center gap-1.5"><Icon name="trash" size={15} />حذف الكشف</span>
       </button>
       {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
     </div>

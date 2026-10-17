@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { StatusBadge } from "./ui/StatusBadge";
+import { Tile, Done, Muted } from "@/components/home/Tiles";
 
 export type PrayerListItem = {
   id: string;
@@ -7,6 +6,7 @@ export type PrayerListItem = {
   completedToday: boolean;
 };
 
+/** الصلوات (ساعات الأجبية) كمربعات: كل مربع بيفتح الساعة وأجزاءها. */
 export function PrayerList({ items, basePath }: { items: PrayerListItem[]; basePath: string }) {
   if (items.length === 0) {
     return (
@@ -16,16 +16,11 @@ export function PrayerList({ items, basePath }: { items: PrayerListItem[]; baseP
     );
   }
   return (
-    <div className="space-y-2">
+    <div className="grid grid-cols-2 gap-3">
       {items.map((p) => (
-        <Link
-          key={p.id}
-          href={`${basePath}/${p.id}`}
-          className="flex items-center justify-between bg-white rounded-card border border-line p-4 hover:border-primary transition-colors"
-        >
-          <span className="font-bold text-ink">{p.title_ar}</span>
-          {p.completedToday ? <StatusBadge tone="good">✅ تمت اليوم</StatusBadge> : <StatusBadge tone="muted">لم تبدأ اليوم</StatusBadge>}
-        </Link>
+        <Tile key={p.id} href={`${basePath}/${p.id}`} label={p.title_ar} icon="cross">
+          {p.completedToday ? <Done>تمت اليوم</Done> : <Muted>لم تبدأ اليوم</Muted>}
+        </Tile>
       ))}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState, useTransition } from "react";
 import { recordMassAttendanceAction, recordSundaySchoolAttendanceAction } from "@/lib/actions/attendance";
 
@@ -54,7 +55,7 @@ export function AttendanceRoster({
           <label key={k.id} className="flex items-center gap-3 px-4 py-3 cursor-pointer">
             <input type="checkbox" checked={selected.has(k.id)} onChange={() => toggle(k.id)} className="w-4 h-4" />
             <span className="font-medium">{k.full_name}</span>
-            {saved.has(k.id) && <span className="text-good text-xs font-bold ms-auto">✅ مسجّل</span>}
+            {saved.has(k.id) && <span className="text-good text-xs font-bold ms-auto inline-flex items-center gap-1"><Icon name="check" size={13} strokeWidth={3} />مسجّل</span>}
           </label>
         ))}
         {kids.length === 0 && <p className="text-ink-soft text-sm p-4">لا يوجد أولاد في هذا النطاق.</p>}

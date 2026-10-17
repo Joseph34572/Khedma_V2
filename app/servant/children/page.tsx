@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { ChildrenTable } from "@/components/ChildrenTable";
 import { toChildRow } from "@/lib/childRow";
 import { QuickStats } from "@/components/children/QuickStats";
+import { ChildrenManageBar } from "@/components/children/ChildrenManageBar";
 import { STAGE_LABELS, type Stage } from "@/lib/roles";
 
 export default async function ServantChildrenPage() {
@@ -23,6 +24,8 @@ export default async function ServantChildrenPage() {
         <h1 className="text-xl font-extrabold text-ink">أولاد {stageId ? STAGE_LABELS[stageId as Stage] : ""}</h1>
         <p className="text-ink-soft text-sm mt-1">جدول المتابعة الأساسي — اضغط على اسم الولد لفتح ملفه الكامل.</p>
       </div>
+
+      <ChildrenManageBar basePath="/servant/children" />
 
       <QuickStats rows={rows} />
 

@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/Icon";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
@@ -33,7 +34,7 @@ export default async function ServantPrayerListPage() {
         <h1 className="text-xl font-extrabold text-ink">الصلاة</h1>
         {role && canManageContent(role) && (
           <Link href="/servant/content/prayer" className="text-sm font-bold text-primary hover:underline">
-            ⚙️ إدارة نصوص الصلاة
+            <span className="inline-flex items-center gap-1.5"><Icon name="settings" size={15} />إدارة نصوص الصلاة</span>
           </Link>
         )}
       </div>

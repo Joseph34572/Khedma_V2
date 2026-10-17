@@ -3,6 +3,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { ChildrenTable } from "@/components/ChildrenTable";
 import { toChildRow } from "@/lib/childRow";
 import { QuickStats } from "@/components/children/QuickStats";
+import { ChildrenManageBar } from "@/components/children/ChildrenManageBar";
 import { STAGE_LABELS, STAGE_ORDER, type Stage } from "@/lib/roles";
 
 export default async function AdminChildrenPage({
@@ -23,6 +24,8 @@ export default async function AdminChildrenPage({
   return (
     <div>
       <h1 className="text-xl font-extrabold text-ink mb-4">الأولاد</h1>
+
+      <ChildrenManageBar basePath="/admin/children" stage={activeStage} />
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <StageFilterLink stage={null} active={activeStage} label="الكل" />

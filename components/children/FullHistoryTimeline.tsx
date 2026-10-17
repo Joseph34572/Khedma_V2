@@ -1,3 +1,4 @@
+import { Icon } from "@/components/ui/Icon";
 export type TimelineDay = { date: string; items: { ok: boolean; label: string }[] };
 
 function formatDay(iso: string): string {
@@ -17,7 +18,7 @@ export function FullHistoryTimeline({ days }: { days: TimelineDay[] }) {
           <ul className="space-y-1 text-sm">
             {day.items.map((item, i) => (
               <li key={i}>
-                {item.ok ? "✅" : "❌"} {item.label}
+                <span className="inline-flex items-center gap-1.5"><span className={item.ok ? "text-good" : "text-bad"}><Icon name={item.ok ? "check" : "x"} size={14} strokeWidth={3} /></span><span className="sr-only">{item.ok ? "تم: " : "لم يتم: "}</span>{item.label}</span>
               </li>
             ))}
           </ul>

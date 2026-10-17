@@ -211,6 +211,20 @@ export interface Database {
         Update: Partial<{ title_ar: string; body_ar: string; sort_order: number; is_active: boolean }>;
         Relationships: [];
       };
+      prayer_sections: {
+        Row: {
+          id: string;
+          prayer_content_id: string;
+          sort_order: number;
+          title_ar: string;
+          body_ar: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: { prayer_content_id: string; sort_order: number; title_ar: string; body_ar?: string };
+        Update: Partial<{ sort_order: number; title_ar: string; body_ar: string }>;
+        Relationships: [];
+      };
       prayer_activity_events: {
         Row: { id: string; session_id: string; occurred_at: string; event_type: string; payload: Record<string, unknown> };
         Insert: { session_id: string; event_type: string; payload?: Record<string, unknown> };
@@ -360,6 +374,12 @@ export interface Database {
     Functions: {
       symposium_set_status: { Args: { q: string; s: QuestionStatus }; Returns: undefined };
       symposium_assign: { Args: { q: string; a: string | null }; Returns: undefined };
+      login_rate_limit_check: {
+        Args: { p_identifier: string; p_max_fails?: number };
+        Returns: { allowed: boolean; retry_after_seconds: number };
+      };
+      login_rate_limit_record: { Args: { p_identifier: string; p_success: boolean }; Returns: undefined };
+      login_rate_limit_clear: { Args: { p_identifier: string }; Returns: undefined };
     };
     Enums: {
       app_role: AppRole;

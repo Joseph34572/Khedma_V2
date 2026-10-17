@@ -36,7 +36,7 @@ export async function QuizListPage({ basePath }: { basePath: string }) {
         {(quizzes ?? []).map((q) => {
           const st = statusOf(q.starts_at, q.ends_at);
           return (
-            <Link key={q.id} href={`${basePath}/${q.id}`} className="flex items-center justify-between bg-white rounded-card border border-line p-4 hover:border-primary">
+            <Link key={q.id} href={`${basePath}/${q.id}`} prefetch={false} className="flex items-center justify-between bg-white rounded-card border border-line p-4 hover:border-primary">
               <div>
                 <p className="font-bold">{q.title_ar}</p>
                 <p className="text-xs text-ink-soft mt-1">{q.stage_id ? STAGE_LABELS[q.stage_id] : "كل المراحل"} · {q.quiz_mode === "file" ? "ملف" : "أسئلة"}</p>

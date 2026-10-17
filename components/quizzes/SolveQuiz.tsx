@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitQuizAttemptAction, type AnswerMap } from "@/lib/actions/quizzes";
@@ -44,7 +45,7 @@ export function SolveQuiz({ attemptId, endsAtMs, questions, basePath }: { attemp
     <div className="max-w-xl">
       <div className="sticky top-0 bg-parchment/95 backdrop-blur py-2 z-10 mb-3 text-center">
         <span className={`inline-block rounded-full px-4 py-1.5 font-extrabold ${remaining < 30 ? "bg-bad/10 text-bad" : "bg-primary/10 text-primary"}`}>
-          ⏱ {mm}:{ss.toString().padStart(2, "0")}
+          <span className="inline-flex items-center gap-1.5"><Icon name="timer" size={16} />{mm}:{ss.toString().padStart(2, "0")}</span>
         </span>
       </div>
 

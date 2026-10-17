@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState, useTransition } from "react";
 import { registerMassAttendanceAction } from "./actions";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -39,7 +40,7 @@ export function MassRow({
         {error && <p className="text-bad text-xs mt-1">{error}</p>}
       </div>
       {attended ? (
-        <StatusBadge tone="good">✅ تم التسجيل</StatusBadge>
+        <StatusBadge tone="good">تم التسجيل</StatusBadge>
       ) : (
         <button
           onClick={handleClick}

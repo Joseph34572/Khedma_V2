@@ -2,14 +2,36 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { audit } from "@/lib/audit";
 
 export type ScanResult = { ok: true; name: string } | { error: string; duplicate?: boolean };
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
-/** يسجّل حضور ولد بمسح رمزه. التحقق من الصلاحية والمرحلة يتم على الخادم وقاعدة البيانات (RLS). */
+/** يسجّل حضور ولد بمسح رمزه، وكل محاولة مسح (ناجحة أو لأ) بتتسجّل في سجل العمليات. */
 export async function scanAttendanceAction(kind: "mass" | "sunday_school", entityId: string, rawCode: string): Promise<ScanResult> {
   const supabase = createClient();
+  const {
+    data: { user: actor }
+  } = await supabase.auth.getUser();
+  const result = await scan(supabase, kind, entityId, rawCode);
+  await audit({
+    actorId: actor?.id ?? null,
+    action: "ok" in result ? "scan_attendance" : "scan_attendance_failed",
+    entityType: kind === "mass" ? "mass" : "sunday_school_session",
+    entityId,
+    details: "ok" in result ? { child: result.name } : { error: result.error }
+  });
+  return result;
+}
+
+/** التحقق من الصلاحية والمرحلة يتم على الخادم وقاعدة البيانات (RLS). */
+async function scan(
+  supabase: ReturnType<typeof createClient>,
+  kind: "mass" | "sunday_school",
+  entityId: string,
+  rawCode: string
+): Promise<ScanResult> {
   const {
     data: { user }
   } = await supabase.auth.getUser();

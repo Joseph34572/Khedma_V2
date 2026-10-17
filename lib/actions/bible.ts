@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logAuditEvent, audit } from "@/lib/audit";
 import { canManageContent, type AppRole } from "@/lib/roles";
 
 // متوسط سرعة قراءة الكتاب المقدس بتركيز (كلمة/دقيقة) — رقم معقول لقراءة هادئة
@@ -36,6 +37,7 @@ export async function startReadingSessionAction(chapterId: string): Promise<{ se
     .single();
 
   if (error || !data) return { error: "تعذّر بدء جلسة القراءة" };
+  await audit({ actorId: user.id, action: "start_reading", entityType: "reading_session", entityId: data.id, details: { chapter_id: chapterId } });
   return { sessionId: data.id };
 }
 
@@ -95,6 +97,14 @@ export async function finishReadingSessionAction(params: {
     session_id: params.sessionId,
     event_type: "session_summary",
     payload: { active_seconds: activeSeconds, progress_percent: progressPercent }
+  });
+
+  await audit({
+    actorId: user.id,
+    action: "finish_reading",
+    entityType: "reading_session",
+    entityId: params.sessionId,
+    details: { active_seconds: activeSeconds, completion_level: completionLevel, abandoned: !!params.abandoned }
   });
 
   revalidatePath("/child/bible");
@@ -167,6 +177,8 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
     .insert(verses.map((v) => ({ chapter_id: chapterId!, verse_number: v.verse_number, text_ar: v.text_ar })));
 
   if (versesError) return { error: "تعذّر حفظ الآيات.", success: null };
+
+  await logAuditEvent(serviceClient, { actorId: user.id, action: "import_bible_chapter", entityType: "bible_chapter", entityId: chapterId, details: { book_id: bookId, chapter_number: chapterNumber, verses: verses.length } });
 
   revalidatePath("/admin/content/bible");
   revalidatePath("/servant/content/bible");

@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/ui/Icon";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteQuizAction } from "@/lib/actions/quizzes";
@@ -15,7 +16,7 @@ export function DeleteQuizButton({ quizId, backHref }: { quizId: string; backHre
   }
   return (
     <span>
-      <button onClick={del} className="text-bad text-sm font-bold">🗑 حذف المسابقة</button>
+      <button onClick={del} className="text-bad text-sm font-bold"><span className="inline-flex items-center gap-1.5"><Icon name="trash" size={15} />حذف المسابقة</span></button>
       {err && <span className="text-bad text-xs ms-2">{err}</span>}
     </span>
   );

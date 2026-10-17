@@ -1,7 +1,9 @@
+import { Icon } from "@/components/ui/Icon";
+import { ChildAccountManager } from "@/components/children/ChildAccountManager";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
-import { STAGE_LABELS, type Stage } from "@/lib/roles";
+import { STAGE_LABELS, canViewAllStages, type Stage } from "@/lib/roles";
 import { relativeArabicDate } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ProfileTabs } from "./ProfileTabs";
@@ -30,6 +32,8 @@ export async function ChildProfilePage({ childId, basePath }: { childId: string;
 
   const canSeeConfession = role === "super_admin" || role === "general_secretary";
   const canSeeSymposium = role !== "member";
+  // الخدام والأمناء يقدروا يديروا حسابات الأولاد (والسيرفر بيتحقق من المرحلة تاني).
+  const canManageAccount = role !== "member";
 
   const { data: child, error: childError } = await supabase
     .from("profiles")
@@ -150,9 +154,9 @@ export async function ChildProfilePage({ childId, basePath }: { childId: string;
           <p className="text-ink-soft mt-1">{STAGE_LABELS[child.stage_id as Stage]}</p>
           <div className="mt-2">
             {child.status === "active" ? (
-              <StatusBadge tone="good">✅ حساب نشط</StatusBadge>
+              <StatusBadge tone="good">حساب نشط</StatusBadge>
             ) : (
-              <StatusBadge tone="bad">🔴 حساب معطّل</StatusBadge>
+              <StatusBadge tone="bad">حساب معطّل</StatusBadge>
             )}
           </div>
         </div>
@@ -239,7 +243,7 @@ export async function ChildProfilePage({ childId, basePath }: { childId: string;
                 <Empty text="لا يوجد اعتراف مسجّل بعد." />
               )
             ) : (
-              <p className="text-sm text-ink-soft">🔒 هذه البيانات مقيّدة ومتاحة للأمناء العامين فقط.</p>
+              <p className="text-sm text-ink-soft flex items-center gap-1.5"><Icon name="lock" size={15} />هذه البيانات مقيّدة ومتاحة للأمناء العامين فقط.</p>
             )
           },
           {
@@ -306,7 +310,7 @@ export async function ChildProfilePage({ childId, basePath }: { childId: string;
                 <Empty text="لم يرسل أي سؤال بعد." />
               )
             ) : (
-              <p className="text-sm text-ink-soft">🔒 هذه البيانات غير متاحة لصلاحيتك.</p>
+              <p className="text-sm text-ink-soft flex items-center gap-1.5"><Icon name="lock" size={15} />هذه البيانات غير متاحة لصلاحيتك.</p>
             )
           },
           {
@@ -316,6 +320,16 @@ export async function ChildProfilePage({ childId, basePath }: { childId: string;
           }
         ]}
       />
+
+      {canManageAccount && (
+        <ChildAccountManager
+          childId={childId}
+          fullName={child.full_name}
+          stageId={child.stage_id}
+          status={child.status}
+          chooseStage={canViewAllStages(role)}
+        />
+      )}
     </div>
   );
 }

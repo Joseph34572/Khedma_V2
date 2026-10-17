@@ -1,21 +1,20 @@
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { AppShell, type NavItem } from "@/components/AppShell";
-import { ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS, STAGE_LABELS } from "@/lib/roles";
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/child", label: "الرئيسية", icon: "🏠" },
-  { href: "/child/prayer", label: "الصلاة", icon: "🕊️" },
-  { href: "/child/bible", label: "الكتاب المقدس", icon: "📖" },
-  { href: "/child/mass", label: "الحضور", icon: "📋" },
-  { href: "/child/quizzes", label: "المسابقات", icon: "🏆" },
-  { href: "/child/symposium", label: "صندوق الندوة", icon: "💬" },
-  { href: "/child/notifications", label: "الإشعارات", icon: "🔔" },
-  { href: "/child/account", label: "حسابي", icon: "🪪" }
+  { href: "/child", label: "الرئيسية", icon: "home" },
+  { href: "/child/prayer", label: "الصلاة", icon: "cross" },
+  { href: "/child/bible", label: "الكتاب المقدس", icon: "book" },
+  { href: "/child/mass", label: "الحضور", icon: "clipboard" },
+  { href: "/child/quizzes", label: "المسابقات", icon: "trophy" },
+  { href: "/child/symposium", label: "صندوق الندوة", icon: "chat" },
+  { href: "/child/notifications", label: "الإشعارات", icon: "bell" }
 ];
 
 export default async function ChildLayout({ children }: { children: React.ReactNode }) {
-  const { supabase, user, fullName, role, status } = await getCurrentProfile();
+  const { supabase, user, fullName, role, stageId, status } = await getCurrentProfile();
   if (!user || !role) redirect("/login");
   if (status === "disabled") {
     await supabase.auth.signOut();
@@ -24,7 +23,13 @@ export default async function ChildLayout({ children }: { children: React.ReactN
   // كل الأدوار مسموح لها تدخل قسم الولد (أولاد وخدام وأمناء ومديرين)، زي ما كان في middleware.
 
   return (
-    <AppShell navItems={NAV_ITEMS} userName={fullName ?? ""} roleLabel={ROLE_LABELS[role]}>
+    <AppShell
+      navItems={NAV_ITEMS}
+      userName={fullName ?? ""}
+      // للولد بنعرض مرحلته (أولى/تانية/تالتة إعدادي) بدل "مستخدم عادي".
+      roleLabel={role === "member" && stageId ? STAGE_LABELS[stageId] : ROLE_LABELS[role]}
+      profileHref="/child/account"
+    >
       {children}
     </AppShell>
   );
