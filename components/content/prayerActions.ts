@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { canManageContent, type AppRole } from "@/lib/roles";
 import { uuidSchema } from "@/lib/validation";
+import { ExpectedError, safeErrorMessage } from "@/lib/safeError";
 
 export type ActionState = { error: string | null; success: string | null };
 
@@ -12,15 +13,15 @@ const MAX_TITLE = 200;
 const MAX_BODY = 20_000;
 
 async function requireContentManager() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("غير مسجّل الدخول");
+  if (!user) throw new ExpectedError("غير مسجّل الدخول");
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!profile || !canManageContent(profile.role as AppRole)) {
-    throw new Error("هذه العملية غير متاحة لدورك الحالي.");
+  const { data: profile } = await supabase.from("profiles").select("role, status").eq("id", user.id).single();
+  if (!profile || profile.status !== "active" || !canManageContent(profile.role as AppRole)) {
+    throw new ExpectedError("هذه العملية غير متاحة لدورك الحالي.");
   }
   return { supabase, userId: user.id };
 }
@@ -85,7 +86,7 @@ export async function updatePrayerSectionAction(_prev: ActionState, formData: Fo
     revalidatePrayer(before.prayer_content_id);
     return { error: null, success: "تم حفظ الجزء." };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "حدث خطأ غير متوقع.", success: null };
+    return { error: safeErrorMessage(e, "prayer content"), success: null };
   }
 }
 
@@ -125,7 +126,7 @@ export async function addPrayerSectionAction(_prev: ActionState, formData: FormD
     revalidatePrayer(prayerId.data);
     return { error: null, success: "تمت إضافة الجزء في آخر الصلاة." };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "حدث خطأ غير متوقع.", success: null };
+    return { error: safeErrorMessage(e, "prayer content"), success: null };
   }
 }
 
@@ -157,7 +158,7 @@ export async function deletePrayerSectionAction(sectionId: string): Promise<{ er
     revalidatePrayer(before.prayer_content_id);
     return {};
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "حدث خطأ غير متوقع." };
+    return { error: safeErrorMessage(e, "prayer content") };
   }
 }
 
@@ -185,6 +186,6 @@ export async function setPrayerActiveAction(prayerId: string, active: boolean): 
     revalidatePrayer(id.data);
     return {};
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "حدث خطأ غير متوقع." };
+    return { error: safeErrorMessage(e, "prayer content") };
   }
 }

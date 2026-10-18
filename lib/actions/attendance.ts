@@ -5,11 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { canViewAllStages, type AppRole, type Stage } from "@/lib/roles";
 import { logAuditEvent, audit } from "@/lib/audit";
+import { z } from "zod";
+import { uuidSchema } from "@/lib/validation";
 
 export type ActionState = { error: string | null; success: string | null };
 
 export async function createMassAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -36,7 +38,7 @@ export async function createMassAction(_prev: ActionState, formData: FormData): 
 }
 
 export async function createSundaySchoolSessionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -70,12 +72,27 @@ export async function createSundaySchoolSessionAction(_prev: ActionState, formDa
   return { error: null, success: "تم إنشاء جلسة مدارس الأحد بنجاح." };
 }
 
+// أكبر كشف حضور معقول في مرة واحدة (مرحلة كاملة). أي عدد أكبر أو معرّفات مش UUID
+// يبقى طلب متلاعب بيه، فبنرفضه بدل ما نبعته لقاعدة البيانات ونسجّله كله في السجل.
+const MAX_ATTENDANCE_BATCH = 500;
+const attendanceIdsSchema = z.array(uuidSchema).max(MAX_ATTENDANCE_BATCH);
+
+function parseAttendanceIds(entityId: unknown, userIds: unknown): { userIds: string[] } | { error: string } {
+  if (!uuidSchema.safeParse(entityId).success) return { error: "الجلسة غير موجودة." };
+  const parsed = attendanceIdsSchema.safeParse(userIds);
+  if (!parsed.success) return { error: "قائمة الحضور غير صحيحة." };
+  return { userIds: Array.from(new Set(parsed.data)) };
+}
+
 export async function recordMassAttendanceAction(massId: string, userIds: string[]): Promise<{ ok: true; failed: number } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
   if (!user) return { error: "غير مسجّل الدخول" };
+  const ids = parseAttendanceIds(massId, userIds);
+  if ("error" in ids) return ids;
+  userIds = ids.userIds;
   if (userIds.length === 0) return { ok: true, failed: 0 };
 
   const rows = userIds.map((uid) => ({ mass_id: massId, user_id: uid, method: "manual_by_servant" as const, recorded_by: user.id }));
@@ -89,11 +106,14 @@ export async function recordMassAttendanceAction(massId: string, userIds: string
 }
 
 export async function recordSundaySchoolAttendanceAction(sessionId: string, userIds: string[]): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
   if (!user) return { error: "غير مسجّل الدخول" };
+  const ids = parseAttendanceIds(sessionId, userIds);
+  if ("error" in ids) return ids;
+  userIds = ids.userIds;
   if (userIds.length === 0) return { ok: true };
 
   const rows = userIds.map((uid) => ({ session_id: sessionId, user_id: uid, method: "manual_by_servant" as const, recorded_by: user.id }));
@@ -107,7 +127,7 @@ export async function recordSundaySchoolAttendanceAction(sessionId: string, user
 }
 
 export async function deleteMassAction(massId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -126,7 +146,7 @@ export async function deleteMassAction(massId: string): Promise<{ error?: string
 }
 
 export async function deleteSundaySchoolSessionAction(sessionId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

@@ -1,5 +1,6 @@
 import { PrayerSectionsEditorPage } from "@/components/content/PrayerSectionsEditorPage";
 
-export default function Page({ params }: { params: { prayerId: string } }) {
+export default async function Page(props: { params: Promise<{ prayerId: string }> }) {
+  const params = await props.params;
   return <PrayerSectionsEditorPage prayerId={params.prayerId} basePath="/admin/content/prayer" />;
 }

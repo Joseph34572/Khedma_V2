@@ -1,15 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
+import { fetchWithAppOrigin } from "./origin";
 
 /** عميل Supabase لاستخدامه داخل مكونات الخادم والإجراءات (Server Actions). */
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // كل كتابة باسم المستخدم لازم تعدّي من السيرفر ده (راجع origin.ts و migration 0022).
+      global: { fetch: fetchWithAppOrigin },
       cookies: {
         getAll() {
           return cookieStore.getAll();

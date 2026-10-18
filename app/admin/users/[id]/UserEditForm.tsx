@@ -1,16 +1,16 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import { updateUserAction, resetPasswordAction, setUserStatusAction, deleteUserAction, type ActionState } from "../actions";
 import { STAGE_LABELS, ROLE_LABELS, type AppRole, type Stage } from "@/lib/roles";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ActionState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SaveButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الحفظ..." : children}
@@ -35,9 +35,9 @@ export function UserEditForm({
   status: string;
   isSelf: boolean;
 }) {
-  const [updateState, updateAction] = useFormState(updateUserAction, initialState);
-  const [passwordState, passwordAction] = useFormState(resetPasswordAction, initialState);
-  const [deleteState, deleteAction] = useFormState(deleteUserAction, initialState);
+  const [updateState, updateAction] = useActionState(updateUserAction, initialState);
+  const [passwordState, passwordAction] = useActionState(resetPasswordAction, initialState);
+  const [deleteState, deleteAction] = useActionState(deleteUserAction, initialState);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [pendingStatus, setPendingStatus] = useState(false);
   const [confirmPhone, setConfirmPhone] = useState("");
@@ -77,7 +77,7 @@ export function UserEditForm({
         </button>
       </div>
 
-      <form action={updateAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={updateAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <input type="hidden" name="user_id" value={userId} />
         <h2 className="font-bold text-ink">البيانات الأساسية</h2>
 
@@ -110,22 +110,22 @@ export function UserEditForm({
         {updateState.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{updateState.success}</p>}
 
         <SaveButton>حفظ التعديلات</SaveButton>
-      </form>
+      </ActionForm>
 
-      <form action={passwordAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={passwordAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <input type="hidden" name="user_id" value={userId} />
         <h2 className="font-bold text-ink">تغيير كلمة المرور</h2>
         <label className="block">
           <span className="block mb-1.5 text-sm font-medium text-ink">كلمة مرور جديدة</span>
-          <input name="password" type="text" minLength={6} required className={inputClass} />
+          <input name="password" type="text" minLength={8} required className={inputClass} />
         </label>
         {passwordState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{passwordState.error}</p>}
         {passwordState.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{passwordState.success}</p>}
         <SaveButton>تغيير كلمة المرور</SaveButton>
-      </form>
+      </ActionForm>
 
       {!isSelf && (
-        <form
+        <ActionForm
           action={deleteAction}
           onSubmit={(e) => {
             if (!window.confirm(`هل أنت متأكد من حذف حساب "${fullName}" نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
@@ -163,7 +163,7 @@ export function UserEditForm({
           >
             حذف الحساب نهائيًا
           </button>
-        </form>
+        </ActionForm>
       )}
     </div>
   );

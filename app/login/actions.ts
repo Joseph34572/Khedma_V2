@@ -12,6 +12,8 @@ const IP_MAX_FAILS = 20; // أعلى من حد الهاتف (5) لأن خدام 
 
 export type LoginState = { error: string | null };
 
+type RateLimitResult = { allowed: boolean; retry_after_seconds: number; attempt_id?: number };
+
 /** يحوّل عدد الثواني لنص عربي مفهوم ("دقيقتين" أفضل من "120 ثانية"). */
 function formatWaitTime(seconds: number): string {
   const minutes = Math.ceil(seconds / 60);
@@ -31,34 +33,35 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     return { error: "برجاء إدخال كلمة المرور." };
   }
 
-  const supabase = createClient();
-  // دالتا تقييد المحاولات (login_rate_limit_check/record) ممنوحتان لـ service_role
-  // فقط (migration 0015) — لو ناديناهم من العميل العادي (مفتاح anon) أي زائر غير
+  const supabase = await createClient();
+  // دوال تقييد المحاولات (login_rate_limit_attempt/resolve) ممنوحة لـ service_role
+  // فقط (migration 0022) — لو ناديناهم من العميل العادي (مفتاح anon) أي زائر غير
   // مسجَّل دخول هيترفض النداء. لازم نستخدم عميل الخدمة هنا تحديدًا، وده آمن لأننا
   // بنستخدمه بس في النداءين الضيقين دول، مش في أي بيانات حساسة تانية.
   const serviceClient = createServiceClient();
 
   // عنوان الـ IP من x-forwarded-for: موثوق هنا لأن المنصة (Vercel) هي اللي بتحطه
   // بنفسها على حافة الشبكة، مش قيمة جاية من المتصفح مباشرة ممكن تتزوّر بسهولة.
-  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || null;
   const ipIdentifier = ip ? `ip:${ip}` : null;
 
-  // حماية من محاولات تخمين كلمة المرور المتكررة: نفحص أولًا هل الرقم (أو الـ IP)
-  // ده وصل للحد المسموح من المحاولات الفاشلة قبل ما نكلّف Supabase Auth أي نداء
-  // شبكة (لو وصل للحد، منرفضش نسيب حتى فرصة تخمين واحدة زيادة). التقييد بالرقم
-  // وبالـ IP معًا — IP واحد ممكن يكون شبكة كنيسة كاملة، فحده أعلى.
-  const { data: phoneCheck } = await serviceClient.rpc("login_rate_limit_check", { p_identifier: normalized });
+  // حماية من محاولات تخمين كلمة المرور المتكررة: الفحص والتسجيل في خطوة واحدة
+  // ذرّية (المحاولة بتتحسب "فاشلة" مقدّمًا تحت قفل في قاعدة البيانات)، فالطلبات
+  // المتوازية مبتعدّيش كلها قبل ما تتحسب. التقييد بالرقم وبالـ IP معًا — IP واحد
+  // ممكن يكون شبكة كنيسة كاملة، فحده أعلى. لو اترفض، منكلّمش Supabase Auth خالص.
+  const { data: phoneCheck } = await serviceClient.rpc("login_rate_limit_attempt", { p_identifier: normalized });
   if (phoneCheck && phoneCheck.allowed === false) {
     await audit({ actorId: null, action: "login_blocked", entityType: "session", details: { phone: normalized, ip, reason: "phone" } });
     return {
       error: `محاولات دخول كثيرة جدًا. برجاء الانتظار ${formatWaitTime(phoneCheck.retry_after_seconds)} ثم المحاولة مرة أخرى.`
     };
   }
+  let ipCheck: RateLimitResult | null = null;
   if (ipIdentifier) {
-    const { data: ipCheck } = await serviceClient.rpc("login_rate_limit_check", {
+    ({ data: ipCheck } = await serviceClient.rpc("login_rate_limit_attempt", {
       p_identifier: ipIdentifier,
       p_max_fails: IP_MAX_FAILS
-    });
+    }));
     if (ipCheck && ipCheck.allowed === false) {
       await audit({ actorId: null, action: "login_blocked", entityType: "session", details: { phone: normalized, ip, reason: "ip" } });
       return {
@@ -67,21 +70,21 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     }
   }
 
+  // رمز CAPTCHA (لو Turnstile متفعّل) — Supabase نفسه هو اللي بيتحقق منه.
+  const captchaToken = String(formData.get("cf-turnstile-response") ?? "") || undefined;
   const { data, error } = await supabase.auth.signInWithPassword({
     email: phoneToAuthEmail(normalized),
-    password
+    password,
+    options: captchaToken ? { captchaToken } : undefined
   });
   const succeeded = !!(data?.user && !error);
 
-  // نسجّل نتيجة المحاولة (نجاح/فشل) بعد كده دايمًا، حتى لو حصل أي خطأ لاحق في
-  // التحقق من البروفايل تحت — المهم إن محاولة كلمة المرور نفسها اتسجلت. ولو
-  // نجحت، نمسح أي محاولات فاشلة سابقة لنفس الرقم/الـ IP، عشان عدّاد الفشل
-  // يبدأ من جديد بدل ما يفضل متراكم من قبل الدخول الناجح.
-  await serviceClient.rpc("login_rate_limit_record", { p_identifier: normalized, p_success: succeeded });
-  if (ipIdentifier) await serviceClient.rpc("login_rate_limit_record", { p_identifier: ipIdentifier, p_success: succeeded });
+  // المحاولة اتسجّلت فاشلة مقدّمًا؛ لو نجحت نعلّمها ناجحة. فشل الرقم القديم بيتمسح،
+  // لكن عدّاد الـ IP لأ: غير كده أي حد عنده حساب صحيح كان يقدر يصفّر العدّاد بدخول
+  // ناجح كل شوية ويكمّل تخمين على أرقام تانية من نفس الشبكة.
   if (succeeded) {
-    await serviceClient.rpc("login_rate_limit_clear", { p_identifier: normalized });
-    if (ipIdentifier) await serviceClient.rpc("login_rate_limit_clear", { p_identifier: ipIdentifier });
+    if (phoneCheck?.attempt_id) await serviceClient.rpc("login_rate_limit_resolve", { p_attempt_id: phoneCheck.attempt_id, p_clear: true });
+    if (ipCheck?.attempt_id) await serviceClient.rpc("login_rate_limit_resolve", { p_attempt_id: ipCheck.attempt_id });
   }
 
   if (error || !data.user) {

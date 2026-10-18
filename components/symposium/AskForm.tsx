@@ -1,12 +1,13 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { submitQuestionAction, type ActionState } from "@/lib/actions/symposium";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initial: ActionState = { error: null, success: null };
 
 function Submit() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الإرسال..." : "إرسال السؤال"}
@@ -15,9 +16,9 @@ function Submit() {
 }
 
 export function AskForm() {
-  const [state, action] = useFormState(submitQuestionAction, initial);
+  const [state, action] = useActionState(submitQuestionAction, initial);
   return (
-    <form action={action} key={state.success ?? "form"} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
+    <ActionForm action={action} key={state.success ?? "form"} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
       <textarea
         name="question_text"
         rows={4}
@@ -32,6 +33,6 @@ export function AskForm() {
       {state.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{state.error}</p>}
       {state.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{state.success}</p>}
       <Submit />
-    </form>
+    </ActionForm>
   );
 }

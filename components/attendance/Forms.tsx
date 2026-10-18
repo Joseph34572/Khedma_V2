@@ -1,14 +1,15 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { createMassAction, createSundaySchoolSessionAction, type ActionState } from "@/lib/actions/attendance";
 import { STAGE_LABELS, type Stage } from "@/lib/roles";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initial: ActionState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function Submit({ label }: { label: string }) {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الحفظ..." : label}
@@ -26,22 +27,22 @@ function Messages({ state }: { state: ActionState }) {
 }
 
 export function CreateMassForm() {
-  const [state, action] = useFormState(createMassAction, initial);
+  const [state, action] = useActionState(createMassAction, initial);
   return (
-    <form action={action} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
+    <ActionForm action={action} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
       <h2 className="font-bold text-ink">إضافة قداس جديد</h2>
       <input name="title_ar" required placeholder="مثال: قداس الأحد" className={inputClass} />
       <input name="mass_date" type="date" required className={inputClass} />
       <Messages state={state} />
       <Submit label="إضافة القداس" />
-    </form>
+    </ActionForm>
   );
 }
 
 export function CreateSessionForm({ stages }: { stages: Stage[] }) {
-  const [state, action] = useFormState(createSundaySchoolSessionAction, initial);
+  const [state, action] = useActionState(createSundaySchoolSessionAction, initial);
   return (
-    <form action={action} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
+    <ActionForm action={action} className="bg-white rounded-card border border-line p-5 space-y-3 mb-6">
       <h2 className="font-bold text-ink">إنشاء جلسة مدارس أحد</h2>
       <select name="stage_id" required className={inputClass}>
         {stages.map((s) => (
@@ -55,6 +56,6 @@ export function CreateSessionForm({ stages }: { stages: Stage[] }) {
       </div>
       <Messages state={state} />
       <Submit label="إنشاء الجلسة" />
-    </form>
+    </ActionForm>
   );
 }

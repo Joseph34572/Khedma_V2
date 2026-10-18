@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { BibleReader } from "@/components/BibleReader";
 
-export default async function ChapterReadPage({ params }: { params: { bookId: string; chapterNumber: string } }) {
+export default async function ChapterReadPage(props: { params: Promise<{ bookId: string; chapterNumber: string }> }) {
+  const params = await props.params;
   const { supabase, user } = await getCurrentProfile();
   if (!user) redirect("/login");
 

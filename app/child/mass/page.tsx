@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth";
 import { relativeArabicDate } from "@/lib/format";
 import { MassRow } from "./MassRow";
+import { canSelfReportMass } from "@/lib/today";
 
 export default async function ChildMassPage() {
   const { supabase, user } = await getCurrentProfile();
@@ -17,7 +18,7 @@ export default async function ChildMassPage() {
   return (
     <div className="max-w-xl">
       <h1 className="text-xl font-extrabold text-ink mb-1">تسجيل حضور القداس</h1>
-      <p className="text-ink-soft text-sm mb-6">اختر القداس الذي حضرته وسجّل حضورك</p>
+      <p className="text-ink-soft text-sm mb-6">اختر القداس الذي حضرته وسجّل حضورك (متاح لقداسات آخر أسبوع)</p>
 
       <div className="space-y-2">
         {(masses ?? []).map((mass) => (
@@ -27,6 +28,7 @@ export default async function ChildMassPage() {
             title={mass.title_ar}
             dateLabel={relativeArabicDate(mass.mass_date)}
             alreadyAttended={attendedIds.has(mass.id)}
+            canReport={canSelfReportMass(mass.mass_date)}
           />
         ))}
         {(!masses || masses.length === 0) && (

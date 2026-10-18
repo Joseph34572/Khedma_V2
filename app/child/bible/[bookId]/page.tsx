@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth";
 
-export default async function BookChaptersPage({ params }: { params: { bookId: string } }) {
+export default async function BookChaptersPage(props: { params: Promise<{ bookId: string }> }) {
+  const params = await props.params;
   const { supabase, user } = await getCurrentProfile();
   if (!user) redirect("/login");
 

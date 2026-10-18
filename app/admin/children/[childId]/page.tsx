@@ -1,5 +1,6 @@
 import { ChildProfilePage } from "@/components/children/ChildProfilePage";
 
-export default function Page({ params }: { params: { childId: string } }) {
+export default async function Page(props: { params: Promise<{ childId: string }> }) {
+  const params = await props.params;
   return <ChildProfilePage childId={params.childId} basePath="/admin/children" />;
 }

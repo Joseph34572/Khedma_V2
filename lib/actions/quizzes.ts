@@ -10,6 +10,7 @@ import { canViewAllStages, type AppRole } from "@/lib/roles";
 
 const BUCKET = "quiz-files";
 const MAX_BYTES = 10 * 1024 * 1024;
+const UPLOAD_GRACE_MS = 10 * 60 * 1000; // مهلة رفع الملف بعد نهاية المسابقة
 const MIME_EXT: Record<string, string> = {
   "application/pdf": "pdf",
   "image/jpeg": "jpg",
@@ -21,7 +22,7 @@ const GRACE_SECONDS = 30;
 type FileMeta = { name: string; type: string; size: number };
 
 async function currentUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -113,6 +114,10 @@ export async function createQuizAction(input: unknown): Promise<{ id: string } |
     if (!q.attachmentPath || !q.attachmentPath.startsWith(`attachments/${me.user.id}/`)) return { error: "ارفع ملف المسابقة (صورة أو PDF)." };
     const info = await objectInfo(q.attachmentPath);
     if (!info) return { error: "لم يتم العثور على الملف المرفوع. حاول رفعه مرة أخرى." };
+    if (!MIME_EXT[info.mimetype] || info.size > MAX_BYTES) {
+      await createServiceClient().storage.from(BUCKET).remove([q.attachmentPath]);
+      return { error: "نوع أو حجم ملف المسابقة غير مسموح (صورة أو PDF فقط)." };
+    }
   } else {
     if (q.questions.length === 0) return { error: "أضف سؤالًا واحدًا على الأقل." };
     for (const [i, qu] of q.questions.entries()) {
@@ -372,6 +377,14 @@ export async function finalizeAnswerUploadAction(attemptId: string, path: string
   const { data: attempt } = await service.from("quiz_attempts").select("id, quiz_id, submitted_at").eq("id", attemptId).eq("user_id", me.user.id).maybeSingle();
   if (!attempt || attempt.submitted_at) return { error: "المحاولة غير صالحة" };
   if (!path.startsWith(`answers/${attempt.quiz_id}/${me.user.id}/${attemptId}/`)) return { error: "مسار الملف غير صحيح" };
+
+  // التسليم لازم يخلص قبل نهاية المسابقة (مع مهلة صغيرة لوقت الرفع نفسه) — غير كده
+  // ممكن حد يجهّز المحاولة قبل النهاية ويسلّم الملف بعدها بأيام.
+  const { data: quiz } = await service.from("quizzes").select("ends_at").eq("id", attempt.quiz_id).maybeSingle();
+  if (!quiz || Date.now() > new Date(quiz.ends_at).getTime() + UPLOAD_GRACE_MS) {
+    await service.storage.from(BUCKET).remove([path]);
+    return { error: "انتهى وقت المسابقة" };
+  }
 
   const info = await objectInfo(path);
   if (!info) return { error: "لم يصل الملف. حاول مرة أخرى." };

@@ -380,6 +380,12 @@ export interface Database {
       };
       login_rate_limit_record: { Args: { p_identifier: string; p_success: boolean }; Returns: undefined };
       login_rate_limit_clear: { Args: { p_identifier: string }; Returns: undefined };
+      login_rate_limit_attempt: {
+        Args: { p_identifier: string; p_max_fails?: number };
+        Returns: { allowed: boolean; retry_after_seconds: number; attempt_id?: number };
+      };
+      login_rate_limit_resolve: { Args: { p_attempt_id: number; p_clear?: boolean }; Returns: undefined };
+      app_origin_key: { Args: Record<string, never>; Returns: string };
     };
     Enums: {
       app_role: AppRole;

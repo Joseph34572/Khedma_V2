@@ -3,11 +3,10 @@ import { getCurrentProfile } from "@/lib/auth";
 import { ChildrenTable, type ChildRow } from "@/components/ChildrenTable";
 import { STAGE_LABELS, STAGE_ORDER, canViewAllStages, type Stage } from "@/lib/roles";
 
-export default async function AdminServantsPage({
-  searchParams
-}: {
-  searchParams: { stage?: string };
+export default async function AdminServantsPage(props: {
+  searchParams: Promise<{ stage?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const { supabase, user, role, stageId } = await getCurrentProfile();
   if (!user || !role) redirect("/login");
   const showConfession = role === "super_admin" || role === "general_secretary";

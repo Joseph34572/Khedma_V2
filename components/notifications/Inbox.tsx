@@ -6,6 +6,15 @@ import { markNotificationReadAction } from "@/lib/actions/notifications";
 import { relativeArabicDate } from "@/lib/format";
 import type { InboxItem } from "./InboxQuery";
 
+/** اسم الموقع الخارجي بيظهر جنب الرابط عشان الولد يعرف هو رايح فين. */
+function linkHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
 export function Inbox({ items }: { items: InboxItem[] }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [readMap, setReadMap] = useState<Record<string, boolean>>({});
@@ -48,8 +57,15 @@ export function Inbox({ items }: { items: InboxItem[] }) {
               <div className="px-4 pb-4 text-sm text-ink-soft border-t border-line pt-3">
                 <p className="whitespace-pre-wrap">{item.body}</p>
                 {item.linkUrl && (
-                  <a href={item.linkUrl} className="inline-block mt-2 text-primary font-bold hover:underline">
-                    <span className="inline-flex items-center gap-1">فتح الرابط<Icon name="arrowLeft" size={14} /></span>
+                  <a
+                    href={item.linkUrl}
+                    {...(item.linkUrl.startsWith("/") ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+                    className="inline-block mt-2 text-primary font-bold hover:underline"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {item.linkUrl.startsWith("/") ? "فتح الرابط" : `فتح الرابط (${linkHost(item.linkUrl)})`}
+                      <Icon name="arrowLeft" size={14} />
+                    </span>
                   </a>
                 )}
               </div>

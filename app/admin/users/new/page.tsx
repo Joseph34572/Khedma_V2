@@ -1,14 +1,15 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import Link from "next/link";
 import { createUserAction, type ActionState } from "../actions";
 import { STAGE_LABELS, ROLE_LABELS } from "@/lib/roles";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ActionState = { error: null, success: null };
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button
       type="submit"
@@ -21,14 +22,14 @@ function SubmitButton() {
 }
 
 export default function NewUserPage() {
-  const [state, formAction] = useFormState(createUserAction, initialState);
+  const [state, formAction] = useActionState(createUserAction, initialState);
 
   return (
     <div className="max-w-lg">
       <Link href="/admin/users" className="text-sm text-ink-soft hover:underline">‹ رجوع للمستخدمين</Link>
       <h1 className="text-xl font-extrabold text-ink mt-2 mb-5">إضافة مستخدم جديد</h1>
 
-      <form action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <Field label="الاسم">
           <input name="full_name" required className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
         </Field>
@@ -36,7 +37,7 @@ export default function NewUserPage() {
           <input name="phone" type="tel" dir="ltr" required className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="01012345678" />
         </Field>
         <Field label="كلمة المرور الأولية">
-          <input name="password" type="text" required minLength={6} className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+          <input name="password" type="text" required minLength={8} className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
         </Field>
         <Field label="نوع المستخدم">
           <select name="role" required className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
@@ -58,7 +59,7 @@ export default function NewUserPage() {
         {state.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{state.success}</p>}
 
         <SubmitButton />
-      </form>
+      </ActionForm>
     </div>
   );
 }

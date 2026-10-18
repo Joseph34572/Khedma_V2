@@ -20,7 +20,7 @@ function startOfTodayIso(): string {
 export async function startPrayerSessionAction(
   prayerContentId: string
 ): Promise<{ sessionId: string; priorActiveSeconds: number } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -65,16 +65,27 @@ export async function finishPrayerSessionAction(params: {
   progressPercent: number;
   abandoned?: boolean;
 }): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
   if (!user) return { error: "غير مسجّل الدخول" };
 
+  const { data: session } = await supabase
+    .from("prayer_sessions")
+    .select("started_at")
+    .eq("id", params.sessionId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!session) return { error: "جلسة الصلاة غير موجودة" };
+
   // activeSeconds القادم من العميل هو الإجمالي التراكمي للصلاة في نفس اليوم (العميل
-  // يبدأ العدّ من priorActiveSeconds المُستلمة عند البدء)، فنخزّنه كما هو.
-  const activeSeconds = Math.max(0, Math.round(params.activeSeconds));
-  const progressPercent = Math.min(100, Math.max(0, Math.round(params.progressPercent)));
+  // يبدأ العدّ من priorActiveSeconds المُستلمة عند البدء). مبنصدّقوش لوحده: عمره ما
+  // يزيد عن الوقت اللي عدّى فعلًا من أول ما الجلسة بدأت، فمحدش يقدر يبعت "5 دقايق"
+  // بعد ثانيتين من فتح الصلاة.
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000));
+  const activeSeconds = Math.min(elapsedSeconds, Math.max(0, Math.round(Number(params.activeSeconds) || 0)));
+  const progressPercent = Math.min(100, Math.max(0, Math.round(Number(params.progressPercent) || 0)));
 
   const activityLevel =
     activeSeconds >= PRAYER_COMPLETION_SECONDS ? "high" : activeSeconds >= PRAYER_ACTIVE_SECONDS_MEDIUM ? "medium" : "low";

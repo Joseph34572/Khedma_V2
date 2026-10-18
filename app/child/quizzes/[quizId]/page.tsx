@@ -7,7 +7,8 @@ import { FileSubmit } from "@/components/quizzes/FileSubmit";
 import { DownloadButton } from "@/components/quizzes/DownloadButton";
 import { relativeArabicDate } from "@/lib/format";
 
-export default async function ChildQuizPage({ params }: { params: { quizId: string } }) {
+export default async function ChildQuizPage(props: { params: Promise<{ quizId: string }> }) {
+  const params = await props.params;
   const { supabase, user } = await getCurrentProfile();
   if (!user) redirect("/login");
 

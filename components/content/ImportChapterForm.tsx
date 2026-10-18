@@ -1,13 +1,14 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { importChapterAction, type ImportChapterState } from "@/lib/actions/bible";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ImportChapterState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الاستيراد..." : "استيراد الإصحاح"}
@@ -16,10 +17,10 @@ function SubmitButton() {
 }
 
 export function ImportChapterForm({ books }: { books: { id: number; name_ar: string; testament: string }[] }) {
-  const [state, formAction] = useFormState(importChapterAction, initialState);
+  const [state, formAction] = useActionState(importChapterAction, initialState);
 
   return (
-    <form action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+    <ActionForm action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
       <label className="block">
         <span className="block mb-1.5 text-sm font-medium text-ink">السفر</span>
         <select name="book_id" required className={inputClass}>
@@ -41,6 +42,6 @@ export function ImportChapterForm({ books }: { books: { id: number; name_ar: str
       {state.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{state.success}</p>}
 
       <SubmitButton />
-    </form>
+    </ActionForm>
   );
 }

@@ -10,7 +10,7 @@ const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
 /** يسجّل حضور ولد بمسح رمزه، وكل محاولة مسح (ناجحة أو لأ) بتتسجّل في سجل العمليات. */
 export async function scanAttendanceAction(kind: "mass" | "sunday_school", entityId: string, rawCode: string): Promise<ScanResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user: actor }
   } = await supabase.auth.getUser();
@@ -27,7 +27,7 @@ export async function scanAttendanceAction(kind: "mass" | "sunday_school", entit
 
 /** التحقق من الصلاحية والمرحلة يتم على الخادم وقاعدة البيانات (RLS). */
 async function scan(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   kind: "mass" | "sunday_school",
   entityId: string,
   rawCode: string

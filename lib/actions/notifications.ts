@@ -27,7 +27,7 @@ function segmentToQuery(segment: AudienceSegment): { role: AppRole; stage?: Stag
 }
 
 async function resolveRecipients(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   senderRole: AppRole,
   senderStage: Stage | null,
   segments: AudienceSegment[],
@@ -69,7 +69,7 @@ async function resolveRecipients(
 
 export async function sendNotificationAction(_prev: ComposeState, formData: FormData): Promise<ComposeState> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user }
     } = await supabase.auth.getUser();
@@ -167,7 +167,7 @@ export async function markNotificationReadAction(recipientId: string): Promise<{
     const parsed = uuidSchema.safeParse(recipientId);
     if (!parsed.success) throw new ExpectedError("معرّف غير صحيح.");
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user }
     } = await supabase.auth.getUser();
