@@ -117,7 +117,7 @@ export function UserEditForm({
         <h2 className="font-bold text-ink">تغيير كلمة المرور</h2>
         <label className="block">
           <span className="block mb-1.5 text-sm font-medium text-ink">كلمة مرور جديدة</span>
-          <input name="password" type="text" minLength={6} required className={inputClass} />
+          <input name="password" type="text" minLength={8} required className={inputClass} />
         </label>
         {passwordState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{passwordState.error}</p>}
         {passwordState.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{passwordState.success}</p>}

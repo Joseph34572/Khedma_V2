@@ -3,6 +3,7 @@
 import { InstallBanner } from "@/components/pwa/InstallApp";
 import { Icon } from "@/components/ui/Icon";
 import { useFormState, useFormStatus } from "react-dom";
+import { Turnstile } from "@/components/Turnstile";
 import { loginAction, type LoginState } from "./actions";
 
 const initialState: LoginState = { error: null };
@@ -71,6 +72,8 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
+
+          <Turnstile resetKey={state} />
 
           {state.error && (
             <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">

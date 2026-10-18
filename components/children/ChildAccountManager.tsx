@@ -95,7 +95,7 @@ export function ChildAccountManager({
         <input type="hidden" name="child_id" value={childId} />
         <label className="block">
           <span className="block text-sm font-medium text-ink mb-1.5">كلمة مرور جديدة</span>
-          <input name="password" type="text" required minLength={6} className={inputClass} />
+          <input name="password" type="text" required minLength={8} className={inputClass} />
         </label>
         {passwordState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{passwordState.error}</p>}
         {passwordState.success && <p role="status" className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{passwordState.success}</p>}

@@ -9,12 +9,15 @@ export function MassRow({
   massId,
   title,
   dateLabel,
-  alreadyAttended
+  alreadyAttended,
+  canReport
 }: {
   massId: string;
   title: string;
   dateLabel: string;
   alreadyAttended: boolean;
+  /** التسجيل الذاتي متاح لقداسات آخر أسبوع بس (مش اللي لسه مجاتش ولا القديمة). */
+  canReport: boolean;
 }) {
   const [attended, setAttended] = useState(alreadyAttended);
   const [error, setError] = useState<string | null>(null);
@@ -23,12 +26,9 @@ export function MassRow({
   function handleClick() {
     setError(null);
     startTransition(async () => {
-      try {
-        await registerMassAttendanceAction(massId);
-        setAttended(true);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "حدث خطأ.");
-      }
+      const res = await registerMassAttendanceAction(massId);
+      if ("error" in res) setError(res.error);
+      else setAttended(true);
     });
   }
 
@@ -41,6 +41,8 @@ export function MassRow({
       </div>
       {attended ? (
         <StatusBadge tone="good">تم التسجيل</StatusBadge>
+      ) : !canReport ? (
+        <StatusBadge tone="muted">غير متاح</StatusBadge>
       ) : (
         <button
           onClick={handleClick}

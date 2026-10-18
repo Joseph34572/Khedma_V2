@@ -36,7 +36,7 @@ export default function NewUserPage() {
           <input name="phone" type="tel" dir="ltr" required className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="01012345678" />
         </Field>
         <Field label="كلمة المرور الأولية">
-          <input name="password" type="text" required minLength={6} className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+          <input name="password" type="text" required minLength={8} className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
         </Field>
         <Field label="نوع المستخدم">
           <select name="role" required className="w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none">

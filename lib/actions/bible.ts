@@ -53,19 +53,22 @@ export async function finishReadingSessionAction(params: {
   } = await supabase.auth.getUser();
   if (!user) return { error: "غير مسجّل الدخول" };
 
-  const activeSeconds = Math.max(0, Math.round(params.activeSeconds));
-  const progressPercent = Math.min(100, Math.max(0, Math.round(params.progressPercent)));
-
   // نجيب الإصحاح المرتبط بالجلسة عشان نحسب عدد كلماته، وعلى أساسه الوقت المتوقع للقراءة.
   const { data: session } = await supabase
     .from("bible_reading_sessions")
-    .select("chapter_id")
+    .select("chapter_id, started_at")
     .eq("id", params.sessionId)
     .eq("user_id", user.id)
     .maybeSingle();
+  if (!session) return { error: "جلسة القراءة غير موجودة" };
+
+  // وقت النشاط اللي جاي من العميل عمره ما يزيد عن الوقت اللي عدّى فعلًا من بداية الجلسة.
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000));
+  const activeSeconds = Math.min(elapsedSeconds, Math.max(0, Math.round(Number(params.activeSeconds) || 0)));
+  const progressPercent = Math.min(100, Math.max(0, Math.round(Number(params.progressPercent) || 0)));
 
   let requiredSeconds = 180; // قيمة احتياطية لو تعذّر جلب نص الآيات لأي سبب
-  if (session?.chapter_id) {
+  if (session.chapter_id) {
     const { data: verses } = await supabase.from("bible_verses").select("text_ar").eq("chapter_id", session.chapter_id);
     if (verses && verses.length > 0) {
       requiredSeconds = expectedReadingSeconds(verses.map((v) => v.text_ar).join(" "));
@@ -122,8 +125,8 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
   } = await supabase.auth.getUser();
   if (!user) return { error: "غير مسجّل الدخول", success: null };
 
-  const { data: me } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  if (!me || !canManageContent(me.role as AppRole)) {
+  const { data: me } = await supabase.from("profiles").select("role, status").eq("id", user.id).single();
+  if (!me || me.status !== "active" || !canManageContent(me.role as AppRole)) {
     return { error: "هذه العملية غير متاحة لدورك الحالي.", success: null };
   }
 
@@ -134,6 +137,13 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
   if (!bookId || !chapterNumber || !raw) {
     return { error: "من فضلك أكمل كل الحقول.", success: null };
   }
+  // أطول سفر 150 إصحاح، وأطول إصحاح 176 آية (مزمور 119) — أي حاجة برّه كده غلط.
+  if (!Number.isInteger(bookId) || bookId < 1 || bookId > 100 || !Number.isInteger(chapterNumber) || chapterNumber < 1 || chapterNumber > 150) {
+    return { error: "السفر أو رقم الإصحاح غير صحيح.", success: null };
+  }
+  if (raw.length > 60_000) {
+    return { error: "النص طويل جدًا على إصحاح واحد.", success: null };
+  }
 
   const lines = raw.split("\n").map((l) => l.trim()).filter(Boolean);
   const verses: { verse_number: number; text_ar: string }[] = [];
@@ -143,6 +153,13 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
       return { error: `تعذّر فهم هذا السطر (يجب أن يبدأ برقم الآية): "${line.slice(0, 40)}..."`, success: null };
     }
     verses.push({ verse_number: Number(match[1]), text_ar: (match[2] ?? "").trim() });
+  }
+
+  if (verses.length > 200 || verses.some((v) => v.verse_number < 1 || v.verse_number > 200)) {
+    return { error: "أرقام الآيات أو عددها غير منطقي لإصحاح واحد.", success: null };
+  }
+  if (new Set(verses.map((v) => v.verse_number)).size !== verses.length) {
+    return { error: "فيه رقم آية متكرر في النص.", success: null };
   }
 
   if (verses.length === 0) {
@@ -168,7 +185,12 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
       .single();
     if (chapterError || !created) return { error: "تعذّر إنشاء الإصحاح.", success: null };
     chapterId = created.id;
-  } else {
+  }
+
+  // الاستبدال: بنحتفظ بالآيات القديمة، ولو حفظ الجديدة فشل بنرجّعها — عشان الإصحاح
+  // ميفضلش فاضي لو حصلت مشكلة في النص.
+  const { data: oldVerses } = await serviceClient.from("bible_verses").select("verse_number, text_ar").eq("chapter_id", chapterId);
+  if (oldVerses && oldVerses.length > 0) {
     await serviceClient.from("bible_verses").delete().eq("chapter_id", chapterId);
   }
 
@@ -176,7 +198,12 @@ export async function importChapterAction(_prev: ImportChapterState, formData: F
     .from("bible_verses")
     .insert(verses.map((v) => ({ chapter_id: chapterId!, verse_number: v.verse_number, text_ar: v.text_ar })));
 
-  if (versesError) return { error: "تعذّر حفظ الآيات.", success: null };
+  if (versesError) {
+    if (oldVerses && oldVerses.length > 0) {
+      await serviceClient.from("bible_verses").insert(oldVerses.map((v) => ({ chapter_id: chapterId!, ...v })));
+    }
+    return { error: "تعذّر حفظ الآيات.", success: null };
+  }
 
   await logAuditEvent(serviceClient, { actorId: user.id, action: "import_bible_chapter", entityType: "bible_chapter", entityId: chapterId, details: { book_id: bookId, chapter_number: chapterNumber, verses: verses.length } });
 

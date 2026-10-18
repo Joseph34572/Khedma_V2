@@ -33,8 +33,8 @@ export function NewChildForm({ backHref, chooseStage, stageLabel }: { backHref: 
         <Field label="رقم الموبايل (هيستخدمه في الدخول)">
           <input name="phone" type="tel" dir="ltr" required className={inputClass} placeholder="01012345678" />
         </Field>
-        <Field label="كلمة المرور الأولية (٦ حروف أو أرقام على الأقل)">
-          <input name="password" type="text" required minLength={6} className={inputClass} />
+        <Field label="كلمة المرور الأولية (٨ حروف أو أرقام على الأقل)">
+          <input name="password" type="text" required minLength={8} className={inputClass} />
         </Field>
         {chooseStage ? (
           <Field label="المرحلة">
