@@ -35,7 +35,8 @@ async function fetchKey(): Promise<string | null> {
   }
 }
 
-export async function getAppOriginKey(): Promise<string | null> {
+export async function getAppOriginKey(forceRefresh = false): Promise<string | null> {
+  if (forceRefresh) cached = null;
   if (cached && (cached.key || Date.now() - cached.at < RETRY_AFTER_MS)) return cached.key;
   if (!inflight) {
     inflight = fetchKey().then((key) => {
@@ -47,13 +48,31 @@ export async function getAppOriginKey(): Promise<string | null> {
   return inflight;
 }
 
+// رسالة الرفض من trigger الحماية في قاعدة البيانات (0022).
+const ORIGIN_REJECTED = "الكتابة المباشرة غير مسموحة";
+
+function withKey(input: RequestInfo | URL, init: RequestInit | undefined, key: string): Promise<Response> {
+  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+  headers.set(APP_ORIGIN_HEADER, key);
+  return fetch(input, { ...init, headers });
+}
+
 /** fetch بيضيف هيدر المفتاح لطلبات قاعدة البيانات (REST) بس، مش لطلبات Auth أو التخزين. */
 export const fetchWithAppOrigin: typeof fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   if (!url.includes("/rest/v1/")) return fetch(input, init);
   const key = await getAppOriginKey();
   if (!key) return fetch(input, init);
-  const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
-  headers.set(APP_ORIGIN_HEADER, key);
-  return fetch(input, { ...init, headers });
+  const res = await withKey(input, init, key);
+
+  // لو المفتاح اتغيّر في قاعدة البيانات (مثلًا بعد تدويره)، الكتابة بتترفض بالمفتاح
+  // القديم المتخزن؛ نجيب الجديد ونعيد الطلب مرة واحدة بس.
+  if (res.status === 403 && (typeof init?.body === "string" || init?.body == null)) {
+    const text = await res.clone().text().catch(() => "");
+    if (text.includes(ORIGIN_REJECTED)) {
+      const fresh = await getAppOriginKey(true);
+      if (fresh && fresh !== key) return withKey(input, init, fresh);
+    }
+  }
+  return res;
 };
