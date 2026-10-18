@@ -153,7 +153,9 @@ grant execute on function login_rate_limit_resolve(bigint, boolean) to service_r
 -- بتترفض حتى لو سياسات RLS كانت هتسمح بيها. القراءة مش متأثرة.
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
-grant usage on schema private to anon, authenticated;
+-- service_role (عميل الخدمة في السيرفر) لازم يوصل للـ schema كمان، وإلا أي كتابة
+-- بيه (سجل العمليات، الحسابات، المسابقات) بتفشل بـ "permission denied for schema private".
+grant usage on schema private to anon, authenticated, service_role;
 
 create table if not exists private.app_origin (
   id boolean primary key default true check (id),
@@ -171,6 +173,9 @@ $$;
 revoke all on function app_origin_key() from public, anon, authenticated;
 grant execute on function app_origin_key() to service_role;
 
+-- تغيير المفتاح (لو اتسرّب): السيرفر بيلاحظ الرفض ويجيب المفتاح الجديد لوحده.
+--   update private.app_origin set key = replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '');
+
 create or replace function private.app_origin_ok() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
@@ -179,7 +184,7 @@ language sql stable security definer set search_path = public as $$
   );
 $$;
 revoke all on function private.app_origin_ok() from public;
-grant execute on function private.app_origin_ok() to anon, authenticated;
+grant execute on function private.app_origin_ok() to anon, authenticated, service_role;
 
 -- الفحص بيحصل بس لما الكتابة جاية مباشرة بدور المستخدم (anon/authenticated). جوّه
 -- دوال SECURITY DEFINER (زي symposium_assign) الدور بيبقى صاحب الدالة، والدوال
@@ -187,14 +192,18 @@ grant execute on function private.app_origin_ok() to anon, authenticated;
 create or replace function private.enforce_app_origin() returns trigger
 language plpgsql as $$
 begin
-  if current_user in ('anon', 'authenticated') and not private.app_origin_ok() then
-    raise exception 'الكتابة المباشرة غير مسموحة؛ استخدم التطبيق' using errcode = '42501';
+  -- الشرطين منفصلين عن قصد: أي دور تاني (service_role، أدوار Supabase الداخلية)
+  -- مبيوصلش أصلًا لنداء الدالة اللي في schema private.
+  if current_user in ('anon', 'authenticated') then
+    if not private.app_origin_ok() then
+      raise exception 'الكتابة المباشرة غير مسموحة؛ استخدم التطبيق' using errcode = '42501';
+    end if;
   end if;
   return null;
 end;
 $$;
 revoke all on function private.enforce_app_origin() from public;
-grant execute on function private.enforce_app_origin() to anon, authenticated;
+grant execute on function private.enforce_app_origin() to anon, authenticated, service_role;
 
 do $$
 declare
