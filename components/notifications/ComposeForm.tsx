@@ -1,15 +1,16 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import { sendNotificationAction, type ComposeState } from "@/lib/actions/notifications";
 import { type AudienceSegment } from "@/lib/audienceSegments";
 import { STAGE_LABELS, STAGE_ORDER, type Stage } from "@/lib/roles";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ComposeState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SendButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الإرسال..." : "إرسال الإشعار"}
@@ -29,12 +30,12 @@ function Checkbox({ value, label }: { value: AudienceSegment; label: string }) {
 /** نموذج الإرسال: لمدير عام/أمين عام يرى كل الفئات (كل المراحل + الأدوار الإدارية)،
  * ولأمين الخدمة يرى فقط أولاد وخدام مرحلته. */
 export function ComposeForm({ scope, myStage }: { scope: "global" | "stage"; myStage?: Stage | null }) {
-  const [state, formAction] = useFormState(sendNotificationAction, initialState);
+  const [state, formAction] = useActionState(sendNotificationAction, initialState);
 
   const stagesToShow: Stage[] = scope === "global" ? STAGE_ORDER : myStage ? [myStage] : [];
 
   return (
-    <form action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4 mb-6">
+    <ActionForm action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4 mb-6">
       <h2 className="font-bold text-ink">إرسال إشعار جديد</h2>
 
       <label className="block">
@@ -80,6 +81,6 @@ export function ComposeForm({ scope, myStage }: { scope: "global" | "stage"; myS
       {state.error && <p className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{state.error}</p>}
       {state.success && <p className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{state.success}</p>}
       <SendButton />
-    </form>
+    </ActionForm>
   );
 }

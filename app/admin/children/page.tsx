@@ -6,11 +6,10 @@ import { QuickStats } from "@/components/children/QuickStats";
 import { ChildrenManageBar } from "@/components/children/ChildrenManageBar";
 import { STAGE_LABELS, STAGE_ORDER, type Stage } from "@/lib/roles";
 
-export default async function AdminChildrenPage({
-  searchParams
-}: {
-  searchParams: { stage?: string };
+export default async function AdminChildrenPage(props: {
+  searchParams: Promise<{ stage?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const { supabase, user, role } = await getCurrentProfile();
   if (!user || !role) redirect("/login");
   const showConfession = role === "super_admin" || role === "general_secretary";

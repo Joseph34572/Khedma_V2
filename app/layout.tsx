@@ -9,6 +9,10 @@ const tajawal = Tajawal({
   variable: "--font-tajawal"
 });
 
+// كل الصفحات بتترندر لكل طلب (مش static) عشان سكريبتات Next.js تاخد الـ nonce
+// بتاع CSP الخاص بالطلب ده (راجع lib/csp.ts). أغلب الصفحات كانت ديناميكية أصلًا.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "خدمة إعدادي",
   description: "تطبيق متابعة خدمة مرحلة إعدادي",

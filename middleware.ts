@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { buildCsp, createNonce } from "@/lib/csp";
 
 const PUBLIC_PATHS = ["/login"];
 
@@ -16,6 +17,7 @@ const PUBLIC_PATHS = ["/login"];
 export async function middleware(request: NextRequest) {
   const { response: sessionResponse, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
+  const csp = buildCsp(createNonce());
 
   if (PUBLIC_PATHS.includes(pathname)) {
     // دفاع إضافي (defense in depth): لو أي زائر بعت هيدر x-verified-user-id يدويًا
@@ -27,14 +29,18 @@ export async function middleware(request: NextRequest) {
     // استخدمها هنا بالغلط مستقبلًا.
     const sanitizedHeaders = new Headers(request.headers);
     sanitizedHeaders.delete("x-verified-user-id");
+    sanitizedHeaders.set("content-security-policy", csp);
     const publicResponse = NextResponse.next({ request: { headers: sanitizedHeaders } });
     sessionResponse.cookies.getAll().forEach((cookie) => publicResponse.cookies.set(cookie));
+    publicResponse.headers.set("content-security-policy", csp);
     return publicResponse;
   }
 
   if (!user) {
     const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    redirectResponse.headers.set("content-security-policy", csp);
+    return redirectResponse;
   }
 
   // نمرّر هوية المستخدم اللي اتأكدنا منها فعليًا فوق (عن طريق auth.getUser()، وده
@@ -46,9 +52,11 @@ export async function middleware(request: NextRequest) {
   // يعني محدش بره الكود ده يقدر يزوّره.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-verified-user-id", user.id);
+  requestHeaders.set("content-security-policy", csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   sessionResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+  response.headers.set("content-security-policy", csp);
   return response;
 }
 

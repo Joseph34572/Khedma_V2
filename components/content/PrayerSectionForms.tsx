@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useRouter } from "next/navigation";
-import { useFormState, useFormStatus } from "react-dom";
 import {
   updatePrayerSectionAction,
   addPrayerSectionAction,
@@ -12,12 +11,13 @@ import {
 } from "./prayerActions";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Icon } from "@/components/ui/Icon";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ActionState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SaveButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الحفظ..." : children}
@@ -38,7 +38,7 @@ function Messages({ state }: { state: ActionState }) {
 export function PrayerSectionEditor({ number, sectionId, title, body }: { number: number; sectionId: string; title: string; body: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(updatePrayerSectionAction, initialState);
+  const [state, formAction] = useActionState(updatePrayerSectionAction, initialState);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -68,7 +68,7 @@ export function PrayerSectionEditor({ number, sectionId, title, body }: { number
       </button>
 
       {open && (
-        <form action={formAction} className="px-4 pb-4 space-y-3">
+        <ActionForm action={formAction} className="px-4 pb-4 space-y-3">
           <input type="hidden" name="section_id" value={sectionId} />
           <label className="block">
             <span className="block text-sm font-medium text-ink mb-1.5">العنوان</span>
@@ -87,7 +87,7 @@ export function PrayerSectionEditor({ number, sectionId, title, body }: { number
               حذف الجزء
             </button>
           </div>
-        </form>
+        </ActionForm>
       )}
     </div>
   );
@@ -95,7 +95,7 @@ export function PrayerSectionEditor({ number, sectionId, title, body }: { number
 
 /** إضافة جزء جديد في آخر الصلاة. */
 export function AddPrayerSectionForm({ prayerId }: { prayerId: string }) {
-  const [state, formAction] = useFormState(addPrayerSectionAction, initialState);
+  const [state, formAction] = useActionState(addPrayerSectionAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -103,14 +103,14 @@ export function AddPrayerSectionForm({ prayerId }: { prayerId: string }) {
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="bg-white rounded-card border-2 border-dashed border-line p-4 space-y-3 mt-6">
+    <ActionForm ref={formRef} action={formAction} className="bg-white rounded-card border-2 border-dashed border-line p-4 space-y-3 mt-6">
       <h2 className="font-extrabold text-ink">إضافة جزء جديد في آخر الصلاة</h2>
       <input type="hidden" name="prayer_content_id" value={prayerId} />
       <input name="title_ar" required placeholder="العنوان (مثلًا: المزمور الخمسون)" className={inputClass} />
       <textarea name="body_ar" required rows={6} placeholder="الصق نص الجزء من مصدر معتمد..." className={`${inputClass} leading-loose text-[15px]`} />
       <Messages state={state} />
       <SaveButton>إضافة الجزء</SaveButton>
-    </form>
+    </ActionForm>
   );
 }
 

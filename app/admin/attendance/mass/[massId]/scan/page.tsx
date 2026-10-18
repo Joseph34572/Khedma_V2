@@ -1,4 +1,5 @@
 import { ScanPage } from "@/components/attendance/Pages";
-export default function Page({ params }: { params: { massId: string } }) {
+export default async function Page(props: { params: Promise<{ massId: string }> }) {
+  const params = await props.params;
   return <ScanPage kind="mass" entityId={params.massId} backHref={`/admin/attendance/mass/${params.massId}`} />;
 }

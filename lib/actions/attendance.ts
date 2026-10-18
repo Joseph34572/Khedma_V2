@@ -11,7 +11,7 @@ import { uuidSchema } from "@/lib/validation";
 export type ActionState = { error: string | null; success: string | null };
 
 export async function createMassAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -38,7 +38,7 @@ export async function createMassAction(_prev: ActionState, formData: FormData): 
 }
 
 export async function createSundaySchoolSessionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -85,7 +85,7 @@ function parseAttendanceIds(entityId: unknown, userIds: unknown): { userIds: str
 }
 
 export async function recordMassAttendanceAction(massId: string, userIds: string[]): Promise<{ ok: true; failed: number } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -106,7 +106,7 @@ export async function recordMassAttendanceAction(massId: string, userIds: string
 }
 
 export async function recordSundaySchoolAttendanceAction(sessionId: string, userIds: string[]): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -127,7 +127,7 @@ export async function recordSundaySchoolAttendanceAction(sessionId: string, user
 }
 
 export async function deleteMassAction(massId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -146,7 +146,7 @@ export async function deleteMassAction(massId: string): Promise<{ error?: string
 }
 
 export async function deleteSundaySchoolSessionAction(sessionId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

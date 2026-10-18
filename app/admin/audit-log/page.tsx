@@ -107,7 +107,8 @@ function timeOf(iso: string): string {
   return new Date(iso).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Cairo" });
 }
 
-export default async function AuditLogPage({ searchParams }: { searchParams: { type?: string } }) {
+export default async function AuditLogPage(props: { searchParams: Promise<{ type?: string }> }) {
+  const searchParams = await props.searchParams;
   const { supabase, user, role } = await getCurrentProfile();
   if (!user) redirect("/login");
   if (!role || !canManageUsers(role)) redirect("/admin");

@@ -1,15 +1,16 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
 import Link from "next/link";
 import { createChildAction, type ChildActionState } from "@/lib/actions/children";
 import { STAGE_LABELS } from "@/lib/roles";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ChildActionState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="w-full rounded-[16px] bg-primary text-white py-3 font-bold disabled:opacity-60">
       {pending ? "جاري الحفظ..." : "إنشاء حساب الولد"}
@@ -19,14 +20,14 @@ function SubmitButton() {
 
 /** إضافة حساب ولد جديد. لو chooseStage = false المرحلة بتتحدد على السيرفر (مرحلة الخادم/الأمين). */
 export function NewChildForm({ backHref, chooseStage, stageLabel }: { backHref: string; chooseStage: boolean; stageLabel?: string }) {
-  const [state, formAction] = useFormState(createChildAction, initialState);
+  const [state, formAction] = useActionState(createChildAction, initialState);
 
   return (
     <div className="max-w-lg mx-auto">
       <Link href={backHref} prefetch={false} className="text-sm text-ink-soft hover:underline">‹ رجوع للأولاد</Link>
       <h1 className="text-xl font-extrabold text-ink mt-2 mb-5">إضافة ولد جديد</h1>
 
-      <form action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={formAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <Field label="اسم الولد">
           <input name="full_name" required className={inputClass} />
         </Field>
@@ -53,7 +54,7 @@ export function NewChildForm({ backHref, chooseStage, stageLabel }: { backHref: 
         {state.success && <p role="status" className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{state.success}</p>}
 
         <SubmitButton />
-      </form>
+      </ActionForm>
     </div>
   );
 }

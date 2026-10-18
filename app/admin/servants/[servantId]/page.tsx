@@ -5,7 +5,8 @@ import { STAGE_LABELS, canViewAllStages, type Stage } from "@/lib/roles";
 import { relativeArabicDate } from "@/lib/format";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
-export default async function ChildProfilePage({ params }: { params: { servantId: string } }) {
+export default async function ChildProfilePage(props: { params: Promise<{ servantId: string }> }) {
+  const params = await props.params;
   const { supabase, user, role } = await getCurrentProfile();
   if (!user) redirect("/login");
 

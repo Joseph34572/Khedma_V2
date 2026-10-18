@@ -24,7 +24,7 @@ function expectedReadingSeconds(versesText: string): number {
 }
 
 export async function startReadingSessionAction(chapterId: string): Promise<{ sessionId: string } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -47,7 +47,7 @@ export async function finishReadingSessionAction(params: {
   progressPercent: number;
   abandoned?: boolean;
 }): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -119,7 +119,7 @@ export type ImportChapterState = { error: string | null; success: string | null 
 
 /** استيراد إصحاح كامل: يلصق المدير النص من مصدر معتمد بصيغة "رقم الآية نص الآية" كل آية في سطر */
 export async function importChapterAction(_prev: ImportChapterState, formData: FormData): Promise<ImportChapterState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

@@ -1,15 +1,16 @@
 "use client";
 
+import { useActionState } from "react";
 import { InstallBanner } from "@/components/pwa/InstallApp";
 import { Icon } from "@/components/ui/Icon";
-import { useFormState, useFormStatus } from "react-dom";
 import { Turnstile } from "@/components/Turnstile";
 import { loginAction, type LoginState } from "./actions";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: LoginState = { error: null };
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button
       type="submit"
@@ -23,7 +24,7 @@ function SubmitButton() {
 }
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(loginAction, initialState);
+  const [state, formAction] = useActionState(loginAction, initialState);
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">
@@ -38,7 +39,7 @@ export default function LoginPage() {
 
         <InstallBanner />
 
-        <form action={formAction} className="bg-white rounded-card border border-line p-6 space-y-4">
+        <ActionForm action={formAction} className="bg-white rounded-card border border-line p-6 space-y-4">
           <div>
             <label htmlFor="phone" className="block mb-1.5 text-sm font-medium text-ink">
               رقم الهاتف
@@ -82,7 +83,7 @@ export default function LoginPage() {
           )}
 
           <SubmitButton />
-        </form>
+        </ActionForm>
 
         <p className="text-center text-ink-soft text-sm mt-6">
           لو نسيت كلمة المرور، تواصل مع أمين الخدمة لإعادة تعيينها.

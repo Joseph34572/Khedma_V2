@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { audit } from "@/lib/audit";
 
 export async function signOutAction() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

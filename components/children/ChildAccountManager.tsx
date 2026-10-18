@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useState, useActionState } from "react";
 import { updateChildAction, resetChildPasswordAction, setChildStatusAction, type ChildActionState } from "@/lib/actions/children";
 import { STAGE_LABELS } from "@/lib/roles";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ActionForm, useActionFormStatus } from "@/components/ui/ActionForm";
 
 const initialState: ChildActionState = { error: null, success: null };
 const inputClass = "w-full rounded-lg border border-line px-3.5 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none";
 
 function SaveButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus();
+  const { pending } = useActionFormStatus();
   return (
     <button type="submit" disabled={pending} className="rounded-lg bg-primary text-white px-5 py-2.5 font-bold disabled:opacity-60">
       {pending ? "جاري الحفظ..." : children}
@@ -32,8 +32,8 @@ export function ChildAccountManager({
   status: string;
   chooseStage: boolean;
 }) {
-  const [updateState, updateAction] = useFormState(updateChildAction, initialState);
-  const [passwordState, passwordAction] = useFormState(resetChildPasswordAction, initialState);
+  const [updateState, updateAction] = useActionState(updateChildAction, initialState);
+  const [passwordState, passwordAction] = useActionState(resetChildPasswordAction, initialState);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -70,7 +70,7 @@ export function ChildAccountManager({
       </div>
       {statusError && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{statusError}</p>}
 
-      <form action={updateAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={updateAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <input type="hidden" name="child_id" value={childId} />
         <label className="block">
           <span className="block text-sm font-medium text-ink mb-1.5">الاسم</span>
@@ -89,9 +89,9 @@ export function ChildAccountManager({
         {updateState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{updateState.error}</p>}
         {updateState.success && <p role="status" className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{updateState.success}</p>}
         <SaveButton>حفظ التعديلات</SaveButton>
-      </form>
+      </ActionForm>
 
-      <form action={passwordAction} className="bg-white rounded-card border border-line p-5 space-y-4">
+      <ActionForm action={passwordAction} className="bg-white rounded-card border border-line p-5 space-y-4">
         <input type="hidden" name="child_id" value={childId} />
         <label className="block">
           <span className="block text-sm font-medium text-ink mb-1.5">كلمة مرور جديدة</span>
@@ -100,7 +100,7 @@ export function ChildAccountManager({
         {passwordState.error && <p role="alert" className="text-bad text-sm bg-bad/10 rounded-lg px-3 py-2">{passwordState.error}</p>}
         {passwordState.success && <p role="status" className="text-good text-sm bg-good/10 rounded-lg px-3 py-2">{passwordState.success}</p>}
         <SaveButton>تغيير كلمة المرور</SaveButton>
-      </form>
+      </ActionForm>
     </section>
   );
 }

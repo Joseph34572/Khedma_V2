@@ -9,7 +9,7 @@ export type ActionState = { error: string | null; success: string | null };
 const STATUSES: QuestionStatus[] = ["new", "reviewed", "discussed", "archived"];
 
 export async function submitQuestionAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -42,7 +42,7 @@ export async function submitQuestionAction(_prev: ActionState, formData: FormDat
 
 export async function setQuestionStatusAction(questionId: string, status: string): Promise<{ error?: string }> {
   if (!STATUSES.includes(status as QuestionStatus)) return { error: "حالة غير صحيحة" };
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("symposium_set_status", { q: questionId, s: status as QuestionStatus });
   if (error) return { error: "تعذّر تغيير الحالة" };
   // التسجيل في audit_log بيحصل داخل دالة symposium_set_status نفسها في قاعدة البيانات.
@@ -52,7 +52,7 @@ export async function setQuestionStatusAction(questionId: string, status: string
 }
 
 export async function assignQuestionAction(questionId: string, servantId: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("symposium_assign", { q: questionId, a: servantId || null });
   if (error) return { error: "تعذّر تعيين السؤال" };
   // التسجيل في audit_log بيحصل داخل دالة symposium_assign نفسها في قاعدة البيانات.
@@ -62,7 +62,7 @@ export async function assignQuestionAction(questionId: string, servantId: string
 }
 
 export async function addQuestionNoteAction(questionId: string, note: string): Promise<{ error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

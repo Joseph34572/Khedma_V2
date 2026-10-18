@@ -4,7 +4,8 @@ import { canManageUsers } from "@/lib/roles";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { UserEditForm } from "./UserEditForm";
 
-export default async function EditUserPage({ params }: { params: { id: string } }) {
+export default async function EditUserPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { supabase, user, role } = await getCurrentProfile();
   if (!user) redirect("/login");
   if (!role || !canManageUsers(role)) redirect("/admin");

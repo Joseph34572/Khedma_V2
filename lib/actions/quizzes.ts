@@ -22,7 +22,7 @@ const GRACE_SECONDS = 30;
 type FileMeta = { name: string; type: string; size: number };
 
 async function currentUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

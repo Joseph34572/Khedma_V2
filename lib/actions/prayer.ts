@@ -20,7 +20,7 @@ function startOfTodayIso(): string {
 export async function startPrayerSessionAction(
   prayerContentId: string
 ): Promise<{ sessionId: string; priorActiveSeconds: number } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -65,7 +65,7 @@ export async function finishPrayerSessionAction(params: {
   progressPercent: number;
   abandoned?: boolean;
 }): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

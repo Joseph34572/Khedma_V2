@@ -13,7 +13,7 @@ const MAX_TITLE = 200;
 const MAX_BODY = 20_000;
 
 async function requireContentManager() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

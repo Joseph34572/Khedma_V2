@@ -12,7 +12,7 @@ import { ExpectedError, safeErrorMessage } from "@/lib/safeError";
 export type ActionState = { error: string | null; success: string | null };
 
 async function requireSuperAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

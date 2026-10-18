@@ -27,7 +27,7 @@ type Manager = { actorId: string; global: boolean; stage: Stage | null };
 const MANAGER_ROLES = ["servant", "stage_secretary", "general_secretary", "super_admin"] as const;
 
 async function requireChildManager(): Promise<Manager> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

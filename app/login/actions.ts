@@ -33,7 +33,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     return { error: "برجاء إدخال كلمة المرور." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   // دوال تقييد المحاولات (login_rate_limit_attempt/resolve) ممنوحة لـ service_role
   // فقط (migration 0022) — لو ناديناهم من العميل العادي (مفتاح anon) أي زائر غير
   // مسجَّل دخول هيترفض النداء. لازم نستخدم عميل الخدمة هنا تحديدًا، وده آمن لأننا
@@ -42,7 +42,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
   // عنوان الـ IP من x-forwarded-for: موثوق هنا لأن المنصة (Vercel) هي اللي بتحطه
   // بنفسها على حافة الشبكة، مش قيمة جاية من المتصفح مباشرة ممكن تتزوّر بسهولة.
-  const ip = headers().get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || null;
   const ipIdentifier = ip ? `ip:${ip}` : null;
 
   // حماية من محاولات تخمين كلمة المرور المتكررة: الفحص والتسجيل في خطوة واحدة

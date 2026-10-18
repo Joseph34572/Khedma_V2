@@ -1,4 +1,5 @@
 import { SymposiumListPage } from "@/components/symposium/StaffPages";
-export default function Page({ searchParams }: { searchParams: { status?: string; stage?: string; q?: string } }) {
+export default async function Page(props: { searchParams: Promise<{ status?: string; stage?: string; q?: string }> }) {
+  const searchParams = await props.searchParams;
   return <SymposiumListPage basePath="/admin/symposium" searchParams={searchParams} />;
 }

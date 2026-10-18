@@ -19,8 +19,8 @@ import type { AppRole, Stage } from "@/lib/roles";
  * (مثلاً استدعاء خارج سياق طلب HTTP عادي)، بنرجع لنفس الطريقة الأصلية الآمنة.
  */
 export const getCurrentProfile = cache(async () => {
-  const supabase = createClient();
-  const verifiedUserId = headers().get("x-verified-user-id");
+  const supabase = await createClient();
+  const verifiedUserId = (await headers()).get("x-verified-user-id");
 
   const user = verifiedUserId
     ? ({ id: verifiedUserId } as { id: string })

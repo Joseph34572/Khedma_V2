@@ -7,7 +7,7 @@ import { uuidSchema } from "@/lib/validation";
 import { canSelfReportMass } from "@/lib/today";
 
 export async function registerMassAttendanceAction(massId: string): Promise<{ ok: true } | { error: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();
